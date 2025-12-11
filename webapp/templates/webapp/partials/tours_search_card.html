@@ -1,0 +1,230 @@
+<!-- webapp/templates/webapp/partials/tour_search_card.html -->
+{% if result.type == 'tour' %}
+<!-- TOUR CARD -->
+<a href="{{ result.url }}" class="card-link">
+    <div class="card h-100 shadow-sm">
+        <!-- Image Section -->
+        {% if result.image_url %}
+        <img src="{{ result.image_url }}" class="card-img-top" alt="{{ result.title }}"
+            style="height: 180px; object-fit: cover;">
+        {% else %}
+        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+            <i class="fas fa-map-marked-alt fa-3x text-muted"></i>
+        </div>
+        {% endif %}
+
+        <div class="card-body">
+            <!-- Type Badge -->
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge bg-info">
+                    <i class="fas fa-map-signs me-1"></i> Tour
+                </span>
+
+                {% if result.is_featured %}
+                <span class="badge bg-warning">
+                    <i class="fas fa-star me-1"></i> Featured
+                </span>
+                {% endif %}
+            </div>
+
+            <!-- Title -->
+            <h5 class="card-title mb-2">{{ result.title }}</h5>
+
+            <!-- Tour Type & Duration -->
+            <div class="mb-3">
+                {% if result.tour_type %}
+                <small class="text-muted d-block">
+                    <i class="fas fa-walking me-1"></i> {{ result.tour_type }}
+                </small>
+                {% endif %}
+
+                {% if result.duration %}
+                <small class="text-muted d-block">
+                    <i class="fas fa-clock me-1"></i> {{ result.duration }}
+                </small>
+                {% endif %}
+
+                {% if result.price %}
+                <small class="text-muted d-block">
+                    <i class="fas fa-tag me-1"></i> {{ result.price }}
+                </small>
+                {% endif %}
+
+                {% if result.operator %}
+                <small class="text-muted d-block">
+                    <i class="fas fa-building me-1"></i> {{ result.operator }}
+                </small>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <p class="card-text text-muted small mb-3">
+                {{ result.description|truncatewords:20 }}
+            </p>
+
+            <!-- Additional Info -->
+            <div class="additional-info">
+                {% if result.itinerary_count %}
+                <div class="mb-2">
+                    <small>
+                        <i class="fas fa-map-pin me-1"></i>
+                        {{ result.itinerary_count }} stops
+                    </small>
+                </div>
+                {% endif %}
+
+                <!-- Tour Highlights (if available) -->
+                {% if result.highlights %}
+                <div class="mb-2">
+                    <small class="text-muted">Highlights:</small>
+                    <div class="d-flex flex-wrap gap-1 mt-1">
+                        {% for highlight in result.highlights|slice:":3" %}
+                        <span class="badge bg-light text-dark" style="font-size: 0.7em;">{{ highlight }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card-footer bg-transparent border-top">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-info small">
+                    View Tour Details <i class="fas fa-arrow-right ms-1"></i>
+                </span>
+                {% if result.is_featured %}
+                <span class="badge bg-primary" style="font-size: 0.7em;">
+                    <i class="fas fa-check-circle"></i> Featured Tour
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</a>
+
+{% elif result.type == 'tour_itinerary' %}
+<!-- TOUR ITINERARY CARD -->
+<a href="{{ result.url }}" class="card-link">
+    <div class="card h-100 shadow-sm">
+        <div class="card-body">
+            <!-- Type Badge -->
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge bg-secondary">
+                    <i class="fas fa-map-pin me-1"></i> Tour Stop {{ result.stop_order }}
+                </span>
+                <span class="badge bg-light text-dark">
+                    Part of: {{ result.subtitle }}
+                </span>
+            </div>
+
+            <!-- Title -->
+            <h5 class="card-title mb-2">{{ result.title }}</h5>
+
+            <!-- Tour & Vendor Info -->
+            <div class="mb-3">
+                <small class="text-muted d-block">
+                    <i class="fas fa-map-signs me-1"></i> {{ result.subtitle }}
+                </small>
+
+                {% if result.vendor_name %}
+                <small class="text-muted d-block">
+                    <i class="fas fa-store me-1"></i> {{ result.vendor_name }}
+                </small>
+                {% endif %}
+
+                {% if result.duration %}
+                <small class="text-muted d-block">
+                    <i class="fas fa-clock me-1"></i> {{ result.duration }}
+                </small>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <p class="card-text text-muted small mb-3">
+                {{ result.description|truncatewords:15 }}
+            </p>
+
+            <!-- Sequential Itinerary Display -->
+            <div class="itinerary-sequence mt-4">
+                <h6 class="text-muted mb-2" style="font-size: 0.9rem;">
+                    <i class="fas fa-list-ol me-1"></i> Tour Sequence
+                </h6>
+                <div class="sequence-track d-flex align-items-center mb-2">
+                    <div class="step-number bg-info text-white rounded-circle d-flex align-items-center justify-content-center"
+                        style="width: 25px; height: 25px; font-size: 0.8rem;">
+                        {{ result.stop_order }}
+                    </div>
+                    <div class="step-line bg-info ms-2" style="height: 2px; flex-grow: 1;"></div>
+                </div>
+
+                {% if result.vendor_name %}
+                <div class="vendor-preview p-2 bg-light rounded">
+                    <small class="text-muted d-block mb-1">
+                        <i class="fas fa-utensils me-1"></i> Food Stop
+                    </small>
+                    <small class="d-block">
+                        <strong>{{ result.vendor_name }}</strong>
+                    </small>
+                    {% if result.duration %}
+                    <small class="text-muted d-block mt-1">
+                        <i class="fas fa-clock me-1"></i> {{ result.duration }} at this stop
+                    </small>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="non-vendor-stop p-2 bg-light rounded">
+                    <small class="text-muted">
+                        <i class="fas fa-map-marker-alt me-1"></i> Scenic or cultural stop
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card-footer bg-transparent border-top">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-secondary small">
+                    View on Tour <i class="fas fa-arrow-right ms-1"></i>
+                </span>
+                <small class="text-muted">
+                    Stop {{ result.stop_order }}
+                </small>
+            </div>
+        </div>
+    </div>
+</a>
+{% endif %}
+
+<style>
+    .card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .card-link:hover {
+        color: inherit;
+    }
+
+    .card {
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+    }
+
+    .card-link:hover .card {
+        border-color: #17a2b8;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .step-line {
+        opacity: 0.3;
+    }
+
+    .vendor-preview {
+        border-left: 3px solid #28a745;
+    }
+
+    .non-vendor-stop {
+        border-left: 3px solid #6c757d;
+    }
+</style>

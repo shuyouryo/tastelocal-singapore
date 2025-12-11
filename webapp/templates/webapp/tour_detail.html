@@ -1,0 +1,213 @@
+<!-- webapp/templates/webapp/tour_detail.html -->
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block title %}{{ tour.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'webapp:homepage' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'webapp:tours_experiences' %}">Tours & Experiences</a></li>
+            <li class="breadcrumb-item active">{{ tour.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Tour Title -->
+            <h1>{{ tour.name }}</h1>
+
+            <!-- Tour Badge -->
+            <div class="mb-3">
+                <span class="badge bg-primary">{{ tour.type_display }}</span>
+            </div>
+
+            <!-- Tour Description -->
+            <div class="mb-4">
+                {{ tour.description|linebreaks }}
+            </div>
+
+            <!-- Tour Itinerary -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Tour Itinerary</h4>
+                </div>
+                <div class="card-body">
+                    {% if tour.itinerary.exists %}
+                    <div class="itinerary-list">
+                        {% for stop in tour.itinerary.all %}
+                        <div class="itinerary-item mb-3 p-3 border rounded">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="mb-0">Stop {{ stop.stop_order }}: {{ stop.vendor_name }}</h5>
+                                {% if stop.duration_minutes %}
+                                <span class="badge bg-secondary">{{ stop.duration_minutes }} minutes</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Vendor Details with Link Button -->
+                            {% if stop.vendor %}
+                            <div class="vendor-info mb-2">
+                                <!-- Show vendor type -->
+                                {% if stop.vendor_type %}
+                                <div><strong>Type:</strong> {{ stop.vendor_type }}</div>
+                                {% endif %}
+
+                                <!-- Details Button -->
+                                <div class="mt-2">
+                                    {% if stop.vendor_type == 'restaurant' or stop.vendor_type == 'cafe' %}
+                                    <a href="{% url 'webapp:restaurant_detail' stop.vendor.id %}"
+                                        class="btn btn-sm btn-outline-primary">
+                                        View Restaurant Details
+                                    </a>
+                                    {% elif stop.vendor_type == 'food_stall' or stop.vendor_type == 'hawker' %}
+                                    <a href="{% url 'webapp:food_stall_detail' stop.vendor.id %}"
+                                        class="btn btn-sm btn-outline-primary">
+                                        View Stall Details
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'webapp:vendor_detail' stop.vendor.id %}"
+                                        class="btn btn-sm btn-outline-primary">
+                                        View Vendor Details
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Stop Description -->
+                            {% if stop.description %}
+                            <p class="mb-0">{{ stop.description|linebreaks }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No stops have been added to this tour yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Tour Operator Card -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Tour Operator</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>{{ tour.tour_operator.company_name }}</strong></p>
+                    {% if tour.tour_operator.description %}
+                    <p class="small text-muted">{{ tour.tour_operator.description|truncatewords:30 }}</p>
+                    {% endif %}
+
+                    <!-- Operator License/Certifications -->
+                    {% with license_info=tour.tour_operator.license_display %}
+                    {% if license_info %}
+                    <div class="mt-3">
+                        <small class="text-muted">{{ license_info }}</small>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+
+            <!-- Tour Picture -->
+            {% if tour.tour_pic %}
+            <div class="card mb-3">
+                <div class="card-body text-center">
+                    <img src="{{ tour.tour_pic.url }}" alt="{{ tour.name }}" class="img-fluid rounded"
+                        style="max-height: 250px; object-fit: cover;">
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Tour Details Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Tour Details</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <strong>Duration:</strong> {{ tour.duration_hours }}
+                        </li>
+
+                        <li class="mb-2">
+                            <strong>Price:</strong> {{ tour.price_display }}
+                        </li>
+
+                        <li class="mb-2">
+                            <strong>Max Participants:</strong> {{ tour.max_participants }}
+                        </li>
+
+                        {% if tour.cuisine_types.exists %}
+                        <li class="mb-2">
+                            <strong>Cuisine Types:</strong>
+                            <div class="small mt-1">{{ tour.cuisine_display }}</div>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .itinerary-item {
+        background-color: #f8f9fa;
+        transition: background-color 0.2s;
+    }
+
+    .itinerary-item:hover {
+        background-color: #e9ecef;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .vendor-info {
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .vendor-info div {
+        margin-bottom: 0.2rem;
+        line-height: 1.4;
+    }
+
+    .vendor-info strong {
+        color: #333;
+        font-weight: 600;
+    }
+
+    /* Button styling */
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    /* Make right column cards stack nicely */
+    .col-lg-4 .card {
+        margin-bottom: 20px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+        .col-lg-4 {
+            margin-top: 30px;
+        }
+
+        .col-lg-4 .card:last-child {
+            margin-bottom: 0;
+        }
+    }
+</style>
+{% endblock %}

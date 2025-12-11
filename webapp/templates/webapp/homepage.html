@@ -1,0 +1,392 @@
+<!-- webapp/templates/webapp/homepage.html -->
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center" id="heroSection">
+    <div class="container">
+        <h1 class="display-4 mb-4">Discover Singapore's Authentic Local Food</h1>
+        <p class="lead mb-4">From street food to fine dining, experience the real taste of Singapore</p>
+
+        <!-- Search Bar -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <form action="{% url 'webapp:search' %}" method="get" class="d-flex">
+                    <input type="text" name="q" class="form-control form-control-lg"
+                        placeholder="Find food stalls, restaurants, tours, and more!" aria-label="Search food experiences">
+                    <button type="submit" class="btn btn-danger btn-lg ms-2">Search</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Food Map Section -->
+<section class="food-map-section py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 mb-3">Singapore Food Map</h2>
+            <p class="lead text-muted">Discover amazing food locations across Singapore</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Locations List -->
+            <div class="col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-white border-0 pb-0">
+                        <h4 class="card-title text-danger mb-0">Popular Food Locations</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="location-item active p-3 mb-3 rounded" data-lat="1.2807" data-lng="103.8510">
+                            <h5 class="mb-1">Lau Pa Sat</h5>
+                            <a href="#" class="what-to-eat" data-location="Lau Pa Sat">What is good to eat here?</a>
+                        </div>
+                        <div class="location-item p-3 mb-3 rounded" data-lat="1.2804" data-lng="103.8440">
+                            <h5 class="mb-1">Maxwell Food Centre</h5>
+                            <a href="#" class="what-to-eat" data-location="Maxwell Food Centre">What is good to eat here?</a>
+                        </div>
+                        <div class="location-item p-3 mb-3 rounded" data-lat="1.3079" data-lng="103.8391">
+                            <h5 class="mb-1">Newton Food Centre</h5>
+                            <a href="#" class="what-to-eat" data-location="Newton Food Centre">What is good to eat here?</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Container -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-0">
+                        <div id="map" style="height: 500px; border-radius: 8px;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Leaflet CSS/JS -->
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+                integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+            
+            <script>
+                /* 1.  BUILD MAP */
+                const map = L.map('map').setView([1.2807, 103.8510], 16);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+
+                /* 2.  CLASSIC MAP-PIN ICON – bigger & red */
+                const foodIcon = L.divIcon({
+                    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 34" width="28" height="40">
+                        <path fill="#e74c3c" stroke="#fff" stroke-width="1.8" d="M12 0C5.4 0 0 5.4 0 12c0 9.5 12 22 12 22s12-12.5 12-22C24 5.4 18.6 0 12 0zm0 16c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"/> </svg>`,
+                    className: 'leaflet-pin-icon',
+                    iconSize: [28, 40],
+                    iconAnchor: [14, 40],
+                    popupAnchor: [0, -38]
+                });
+
+                /* 3.  LOCATION DATA (same as your data-lat/lng) */
+                const places = [
+                    { name: 'Lau Pa Sat', lat: 1.2807, lng: 103.8510 },
+                    { name: 'Maxwell Food Centre', lat: 1.2804, lng: 103.8440 },
+                    { name: 'Newton Food Centre', lat: 1.3079, lng: 103.8391 }
+                ];
+
+                /* 4.  ADD MARKERS + POPUPS */
+                const markers = {};   // keep instances for later
+                places.forEach(p => {
+                    const m = L.marker([p.lat, p.lng], { icon: foodIcon })
+                        .addTo(map)
+                        .bindPopup(`<b>${p.name}</b>`);
+                    markers[p.name] = m;
+                });
+
+                /* 5.  WIRE CARDS TO MAP */
+                document.querySelectorAll('.location-item').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const lat = parseFloat(card.dataset.lat);
+                        const lng = parseFloat(card.dataset.lng);
+                        const name = card.querySelector('h5').textContent.trim();
+
+                        map.flyTo([lat, lng], 17);   // smooth pan + zoom
+                        markers[name].openPopup();   // open its popup
+
+                        /* highlight active card */
+                        document.querySelectorAll('.location-item').forEach(c => c.classList.remove('active'));
+                        card.classList.add('active');
+                    });
+                });
+            </script>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Sections -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Featured Vendors -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h3>🍜</h3>
+                        <h5 class="card-title">Places to Eat</h5>
+                        <p class="card-text">Discover the best local food stalls and restaurants</p>
+                        <a href="{% url 'webapp:places_eat' %}" class="btn btn-outline-danger">Explore</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured Tours -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h3>🗺️</h3>
+                        <h5 class="card-title">Food Tours & Crawls</h5>
+                        <p class="card-text">Join guided tours or explore self-guided food crawls</p>
+                        <a href="{% url 'webapp:tours_experiences' %}" class="btn btn-outline-danger">Discover</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Foodie Stories -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h3>📖</h3>
+                        <h5 class="card-title">Foodie Stories</h5>
+                        <p class="card-text">Read about Singapore's rich food culture and hidden gems</p>
+                        <a href="{% url 'webapp:foodie_stories' %}" class="btn btn-outline-danger">Read</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<style>
+    /* Hero Section Styles */
+    .hero-section {
+        position: relative;
+        color: white;
+        padding: 150px 0;
+        text-align: center;
+        overflow: hidden;
+        min-height: 600px;
+        display: flex;
+        align-items: center;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3));
+        z-index: 1;
+    }
+
+    .hero-section .container {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        transition: opacity 1.5s ease-in-out;
+        opacity: 0;
+    }
+
+    .hero-bg.active {
+        opacity: 1;
+    }
+
+    /* Fallback background if JavaScript fails */
+    .no-js .hero-section {
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+        url('{% static "images/hero-bg-1.jpg" %}') center/cover;
+    }
+
+    .location-item:hover { background: #ffecec; }
+    .location-item.active { background: #f8d7da; font-weight: 600; }
+
+    a.what-to-eat {
+        color: #0d6efd;
+        text-decoration: underline;
+        font-size: 0.875rem;
+    }
+
+    a.what-to-eat:hover {
+        color: #0a58ca;
+    }
+
+    /* Existing Styles */
+    .card {
+        transition: transform 0.2s;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .location-item {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+        background-color: #f8f9fa;
+    }
+
+    .location-item:hover {
+        background-color: #fff5f5;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-left-color: #dc3545;
+    }
+
+    .location-item.active {
+        background-color: #fff5f5;
+        border-left-color: #dc3545;
+    }
+
+    .food-map-section {
+        background-color: #f8f9fa !important;
+    }
+
+    #map {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // ===== SIMPLE HERO BANNER ROTATION =====
+        const heroSection = document.getElementById('heroSection');
+
+        // Define your 5 food images
+        const imageUrls = [
+            "{% static 'images/hero-bg-1.jpg' %}",
+            "{% static 'images/hero-bg-2.jpg' %}",
+            "{% static 'images/hero-bg-3.jpg' %}",
+            "{% static 'images/hero-bg-4.jpg' %}",
+            "{% static 'images/hero-bg-5.jpg' %}"
+        ];
+
+        // Remove no-js class if JavaScript is running
+        document.documentElement.classList.remove('no-js');
+
+        // Create all background elements
+        const backgrounds = imageUrls.map((url, index) => {
+            const bgDiv = document.createElement('div');
+            bgDiv.className = `hero-bg ${index === 0 ? 'active' : ''}`;
+            bgDiv.style.backgroundImage = `url(${url})`;
+            heroSection.appendChild(bgDiv);
+            return bgDiv;
+        });
+
+        // Simple rotation every 20 seconds
+        let currentIndex = 0;
+        setInterval(() => {
+            backgrounds[currentIndex].classList.remove('active');
+            currentIndex = (currentIndex + 1) % backgrounds.length;
+            backgrounds[currentIndex].classList.add('active');
+        }, 20000); // 20 seconds
+
+        // What is there to eat here script
+        document.querySelectorAll('a.what-to-eat').forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                const place = link.dataset.location;          // "Lau Pa Sat" etc.
+                // build search URL – adjust to your actual search pattern
+                window.location.href = `/search/?q=${encodeURIComponent(place)}`;
+            });
+        });
+
+        // ===== AUTO-LOAD MAP =====
+        const locationItems = document.querySelectorAll('.location-item');
+        let map = null;
+
+        // Initialize the map automatically
+        function initMap() {
+            if (map) return; // Map already loaded
+
+            // Create map centered on Singapore
+            map = L.map('map').setView([1.3521, 103.8198], 12);
+
+            // Add tile layer (OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Add markers for each location
+            locationItems.forEach(item => {
+                const lat = parseFloat(item.getAttribute('data-lat'));
+                const lng = parseFloat(item.getAttribute('data-lng'));
+                const title = item.querySelector('h5').textContent;
+                const description = item.querySelector('p').textContent;
+
+                // Create custom icon
+                const foodIcon = L.divIcon({
+                    html: '🍜',
+                    className: 'food-marker',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 30]
+                });
+
+                L.marker([lat, lng], { icon: foodIcon })
+                    .addTo(map)
+                    .bindPopup(`
+                        <div style="min-width: 200px;">
+                            <h5 class="text-danger mb-2">${title}</h5>
+                            <p class="text-muted mb-2">${description}</p>
+                            <small class="text-primary">Click location for directions</small>
+                        </div>
+                    `);
+            });
+        }
+
+        // Add click events to location items
+        locationItems.forEach(item => {
+            item.addEventListener('click', function () {
+                // Remove active class from all items
+                locationItems.forEach(i => i.classList.remove('active'));
+
+                // Add active class to clicked item
+                this.classList.add('active');
+
+                // If map is loaded, center on this location
+                if (map) {
+                    const lat = parseFloat(this.getAttribute('data-lat'));
+                    const lng = parseFloat(this.getAttribute('data-lng'));
+                    map.setView([lat, lng], 15);
+                }
+            });
+        });
+
+        // Load map immediately
+        initMap();
+    });
+</script>
+{% endblock %}

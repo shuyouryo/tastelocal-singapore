@@ -1,0 +1,127 @@
+<!-- vendors/templates/vendors/menu.html -->
+{% extends 'vendors/base.html' %}
+
+{% block title %}Menu Management - TasteLocal Singapore Vendor{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 text-dark mb-1">Menu Management</h1>
+                    <p class="text-muted mb-0">Manage your menu items and pricing</p>
+                </div>
+                <a href="{% url 'vendors:add_menu_item' %}" class="btn btn-primary btn-lg fw-semibold">
+                    <i class="fas fa-plus-circle me-2"></i>Add New Dish
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if menu_items %}
+    <div class="row">
+        {% for item in menu_items %}
+        <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                {% if item.dish_pix %}
+                <img src="{{ item.dish_pix.url }}" alt="{{ item.dish_name }}" class="card-img-top"
+                    style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                    style="height: 200px;">
+                    <i class="fas fa-utensils fa-3x text-muted"></i>
+                </div>
+                {% endif %}
+
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title text-dark mb-0">{{ item.dish_name }}</h5>
+                        <span class="badge bg-primary fs-6">{{ item.display_price }}</span>
+                    </div>
+
+                    {% if item.dish_description %}
+                    <p class="card-text text-muted small">{{ item.dish_description|truncatewords:15 }}</p>
+                    {% endif %}
+
+                    <div class="d-flex flex-wrap gap-1 mb-3">
+                        <!-- REMOVED: Halal badge from menu items -->
+                        {% if item.is_vegetarian %}
+                        <span class="badge bg-info text-dark">Vegetarian</span>
+                        {% endif %}
+                        {% if item.is_vegan %}
+                        <span class="badge bg-warning text-dark">Vegan</span>
+                        {% endif %}
+                        {% if item.is_market_price %}
+                        <span class="badge bg-secondary">Market Price</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-0 pt-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Last updated: {{ item.updated_at|date:"M d, Y" }}</small>
+                        <div class="btn-group">
+                            <a href="{% url 'vendors:edit_menu_item' item.id %}" class="btn btn-outline-primary btn-sm"
+                                title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'vendors:delete_menu_item' item.id %}" class="btn btn-outline-danger btn-sm"
+                                title="Delete"
+                                onclick="return confirm('Are you sure you want to delete {{ item.dish_name }}?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-utensils fa-4x text-muted mb-4"></i>
+                    <h3 class="text-dark mb-3">No Menu Items Yet</h3>
+                    <p class="text-muted mb-4">Start building your menu by adding your first delicious dish.</p>
+                    <a href="{% url 'vendors:add_menu_item' %}" class="btn btn-primary btn-lg fw-semibold">
+                        <i class="fas fa-plus-circle me-2"></i>Add Your First Dish
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .btn-primary {
+        background-color: #e74c3c;
+        border-color: #e74c3c;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .btn-primary:hover {
+        background-color: #c0392b;
+        border-color: #c0392b;
+        transform: translateY(-2px);
+        transition: all 0.2s ease;
+    }
+
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .badge.bg-primary {
+        background-color: #e74c3c !important;
+    }
+</style>
+{% endblock %}

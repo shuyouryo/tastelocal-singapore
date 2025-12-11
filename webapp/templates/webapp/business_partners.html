@@ -1,0 +1,70 @@
+<!-- webapp/templates/webapp/business_partners.html -->
+{% extends 'webapp/base.html' %}
+
+{% block title %}Business Partners - TasteLocal Singapore{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4">Business Partners</h1>
+
+            <!-- Introduction -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h4 class="mb-3">Partner with TasteLocal Singapore</h4>
+                    <p class="mb-0">TasteLocal Singapore helps F&B vendors and tour operators increase their visibility
+                        and reach more customers through our platform. We showcase your business to food enthusiasts and
+                        tourists looking for authentic Singaporean culinary experiences.</p>
+                </div>
+            </div>
+
+            <!-- How It Works -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Getting Started</h5>
+                    <ol class="mb-0">
+                        <li class="mb-2"><strong>Sign Up:</strong> Create an account on this website as a regular user
+                        </li>
+                        <li class="mb-2"><strong>Access Business Portal:</strong> Use your username and password to log
+                            into the appropriate business dashboard</li>
+                        <li class="mb-2"><strong>Manage Your Business:</strong> Update your profile, menu, and events through your dedicated dashboard</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Business Dashboard Access -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Access Your Business Dashboard</h5>
+                    <p class="mb-3">Once you have registered on our website, use your credentials to access:</p>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3">
+                                <h6>F&B Vendors</h6>
+                                <p class="small mb-2">Manage your restaurant, hawker stall, or food establishment</p>
+                                <a href="{% url 'vendors:login' %}" class="btn btn-outline-dark btn-sm">Vendor Login</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3">
+                                <h6>Tour Operators</h6>
+                                <p class="small mb-2">Manage your food tours and culinary experiences</p>
+                                <a href="{% url 'tours:login' %}" class="btn btn-outline-dark btn-sm">Tour Operator
+                                    Login</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <p class="small mb-0"><strong>Note:</strong> You must first create an account on this website
+                            before you can access the business dashboards. Use the same username and password for both.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

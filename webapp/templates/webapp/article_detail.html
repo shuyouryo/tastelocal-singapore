@@ -1,0 +1,141 @@
+<!-- webapp/templates/webapp/article_detail.html -->
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'webapp:homepage' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'webapp:foodie_stories' %}">Foodie Stories</a></li>
+            <li class="breadcrumb-item active">{{ article.title }}</li>
+        </ol>
+    </nav>
+
+    <article class="article-detail">
+        <!-- Article Header -->
+        <header class="article-header mb-4">
+            <h1 class="article-title">{{ article.title }}</h1>
+            <div class="article-meta text-muted">
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                    <span>
+                        <i class="fas fa-user me-1"></i>By {{ article.author_name }}
+                    </span>
+                    <span>
+                        <i class="fas fa-calendar me-1"></i>{{ article.date_written|date:"F j, Y" }}
+                    </span>
+                    {% if article.keywords.exists %}
+                    <span>
+                        <i class="fas fa-tags me-1"></i>
+                        {% for keyword in article.keywords.all %}
+                        <span class="badge bg-light text-dark me-1">{{ keyword.name }}</span>
+                        {% endfor %}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        <!-- Featured Image -->
+        {% if article.images.first %}
+        <div class="article-featured-image mb-4">
+            <img src="{{ article.images.first.image.url }}" class="img-fluid rounded"
+                alt="{{ article.images.first.alt_text|default:article.title }}">
+            {% if article.images.first.caption %}
+            <figcaption class="text-muted text-center mt-2">
+                <small>{{ article.images.first.caption }}</small>
+            </figcaption>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Article Content -->
+        <div class="article-content">
+            {{ article.content|linebreaks }}
+        </div>
+
+        <!-- Additional Images -->
+        {% if article.images.count > 1 %}
+        <div class="article-gallery mt-5">
+            <h4>Gallery</h4>
+            <div class="row">
+                {% for image in article.images.all %}
+                {% if not forloop.first %} {# Skip the first image since it's featured #}
+                <div class="col-md-6 mb-3">
+                    <img src="{{ image.image.url }}" class="img-fluid rounded"
+                        alt="{{ image.alt_text|default:article.title }}">
+                    {% if image.caption %}
+                    <figcaption class="text-muted text-center mt-2">
+                        <small>{{ image.caption }}</small>
+                    </figcaption>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Back to Stories -->
+        <div class="article-footer mt-5 pt-4 border-top">
+            <a href="{% url 'webapp:foodie_stories' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Foodie Stories
+            </a>
+        </div>
+    </article>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .article-detail {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .article-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+
+    .article-meta {
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .article-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #333;
+    }
+
+    .article-content p {
+        margin-bottom: 1.5rem;
+    }
+
+    .article-featured-image img {
+        width: 100%;
+        max-height: 500px;
+        object-fit: cover;
+    }
+
+    .article-gallery img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+    }
+
+    @media (max-width: 768px) {
+        .article-title {
+            font-size: 2rem;
+        }
+
+        .article-content {
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}

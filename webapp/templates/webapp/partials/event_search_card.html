@@ -1,0 +1,100 @@
+<!-- webapp/templates/webapp/partials/event_search_card.html -->
+<a href="{{ result.url }}" class="card-link">
+    <div class="card h-100 shadow-sm">
+        <!-- Image Section -->
+        {% if result.image_url %}
+        <img src="{{ result.image_url }}" class="card-img-top" alt="{{ result.title }}"
+            style="height: 180px; object-fit: cover;">
+        {% else %}
+        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+            <i class="fas fa-calendar-alt fa-3x text-muted"></i>
+        </div>
+        {% endif %}
+
+        <div class="card-body">
+            <!-- Type Badge -->
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge bg-primary">
+                    <i class="fas fa-calendar me-1"></i> Event
+                </span>
+
+                {% if result.is_current %}
+                <span class="badge bg-success">
+                    <i class="fas fa-play-circle me-1"></i> Ongoing
+                </span>
+                {% elif result.is_upcoming %}
+                <span class="badge bg-warning text-dark">
+                    <i class="fas fa-clock me-1"></i> Upcoming
+                </span>
+                {% endif %}
+            </div>
+
+            <!-- Title -->
+            <h5 class="card-title mb-2">{{ result.title }}</h5>
+
+            <!-- Event Details -->
+            <div class="mb-3">
+                <small class="text-muted d-block">
+                    <i class="fas fa-calendar-day me-1"></i> {{ result.date_range }}
+                </small>
+
+                {% if result.time_range %}
+                <small class="text-muted d-block">
+                    <i class="fas fa-clock me-1"></i> {{ result.time_range }}
+                </small>
+                {% endif %}
+
+                {% if result.location %}
+                <small class="text-muted d-block">
+                    <i class="fas fa-map-marker-alt me-1"></i> {{ result.location|truncatechars:40 }}
+                </small>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <p class="card-text text-muted small mb-3">
+                {{ result.description|truncatewords:20 }}
+            </p>
+
+            <!-- Additional Info -->
+            <div class="additional-info">
+                {% if result.event_type %}
+                <div class="mb-2">
+                    <small>
+                        <i class="fas fa-tag me-1"></i> {{ result.event_type|title }}
+                    </small>
+                </div>
+                {% endif %}
+
+                {% if result.cuisine %}
+                <div class="mb-2">
+                    <small>
+                        <i class="fas fa-utensils me-1"></i> {{ result.cuisine }}
+                    </small>
+                </div>
+                {% endif %}
+
+                {% if result.vendor_name %}
+                <div class="mb-2">
+                    <small>
+                        <i class="fas fa-store me-1"></i> Hosted by: {{ result.vendor_name }}
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card-footer bg-transparent border-top">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-primary small">
+                    View Event <i class="fas fa-arrow-right ms-1"></i>
+                </span>
+                {% if result.is_recurring %}
+                <span class="badge bg-info" style="font-size: 0.7em;">
+                    <i class="fas fa-redo"></i> Recurring
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</a>

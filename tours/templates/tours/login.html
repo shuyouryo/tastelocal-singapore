@@ -1,0 +1,182 @@
+<!-- tours/templates/tours/login.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tour Operator Portal - TasteLocal Singapore</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .navbar-brand {
+            font-weight: bold;
+            color: #e74c3c !important;
+            font-size: 1.5rem;
+        }
+
+        .btn-primary {
+            background-color: #e74c3c;
+            border-color: #e74c3c;
+        }
+
+        .btn-primary:hover {
+            background-color: #c0392b;
+            border-color: #c0392b;
+        }
+
+        .tour-login-container {
+            background: linear-gradient(rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.03)), #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tour-login-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .tour-login-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 15px 15px 0 0 !important;
+        }
+
+        .form-control:focus {
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.25);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="tour-login-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <!-- Header -->
+                    <div class="text-center mb-5">
+                        <div class="d-flex align-items-center justify-content-center mb-4">
+                            <span class="navbar-brand fs-2">🍜 TasteLocal Singapore</span>
+                        </div>
+                        <h2 class="h3 text-dark mb-2">Tour Operator Portal</h2>
+                        <p class="text-muted">Exclusive access for tour partners</p>
+
+                        <!-- Clear separation message -->
+                        <div class="alert alert-info border-0 mt-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Tour Operator Access Only</strong> - This portal is for certified tour operators.
+                            For customer access, please visit our main website.
+                        </div>
+                    </div>
+
+                    <!-- Login Form -->
+                    <div class="card tour-login-card">
+                        <div class="card-header tour-login-header py-4">
+                            <h4 class="card-title text-center text-dark mb-0">Sign In to Your Tour Operator Account</h4>
+                        </div>
+                        <div class="card-body p-5">
+                            {% if messages %}
+                            <div class="mb-4">
+                                {% for message in messages %}
+                                <div
+                                    class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible fade show">
+                                    <i
+                                        class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %} me-2"></i>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <form method="post" class="needs-validation" novalidate>
+                                {% csrf_token %}
+
+                                <div class="mb-4">
+                                    <label for="username" class="form-label text-dark fw-semibold">
+                                        <i class="fas fa-user me-2"></i>Username
+                                    </label>
+                                    <input type="text" id="username" name="username"
+                                        class="form-control form-control-lg" placeholder="Enter your username" required>
+                                    <div class="invalid-feedback">
+                                        Please enter your username.
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="password" class="form-label text-dark fw-semibold">
+                                        <i class="fas fa-lock me-2"></i>Password
+                                    </label>
+                                    <input type="password" id="password" name="password"
+                                        class="form-control form-control-lg" placeholder="Enter your password" required>
+                                    <div class="invalid-feedback">
+                                        Please enter your password.
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fw-semibold">
+                                    <i class="fas fa-route me-2"></i>
+                                    Access Tour Dashboard
+                                </button>
+                            </form>
+
+                            <!-- Support Section -->
+                            <div class="mt-5 pt-4 border-top">
+                                <div class="text-center">
+                                    <p class="text-muted mb-3">
+                                        <i class="fas fa-life-ring me-2"></i>
+                                        Need help accessing your account?
+                                    </p>
+                                    <div class="d-grid gap-2">
+                                        <a href="mailto:tours@tastelocal.sg" class="btn btn-outline-danger">
+                                            <i class="fas fa-envelope me-2"></i>Tour Operator Support
+                                        </a>
+                                    </div>
+                                    <p class="small text-muted mt-3">
+                                        For customer support, please visit our main website
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="text-center mt-4">
+                        <p class="text-muted small">
+                            &copy; 2024 TasteLocal Singapore. Tour operator portal access only.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Form validation
+        document.addEventListener('DOMContentLoaded', function () {
+            const forms = document.querySelectorAll('.needs-validation');
+
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,301 @@
+<!-- webapp/templates/webapp/restaurants.html -->
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'webapp:homepage' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'webapp:places_eat' %}">Places to Eat</a></li>
+            <li class="breadcrumb-item active">Restaurants & Cafes</li>
+        </ol>
+    </nav>
+
+    <h1>Restaurants & Coffee Shops</h1>
+    <p class="lead">Sit back and relax as you enjou your meal.</p>
+
+    <div class="row mt-4">
+        <!-- Filters Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">FILTERS</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Cuisine Filters -->
+                    <div class="mb-4">
+                        <h6 class="filter-section-title">CUISINE</h6>
+                        {% for cuisine in available_cuisines %}
+                        <div class="filter-option">
+                            <input type="checkbox" id="cuisine-{{ cuisine|slugify }}" name="cuisine"
+                                value="{{ cuisine }}" {% if cuisine in selected_cuisines %}checked{% endif %}>
+                            <label for="cuisine-{{ cuisine|slugify }}">{{ cuisine }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Dietary Certification Filters -->
+                    <div class="mb-4">
+                        <h6 class="filter-section-title">DIETARY CERTIFICATIONS</h6>
+                        {% if show_halal_filter %}
+                        <div class="filter-option">
+                            <input type="checkbox" id="halal" name="halal" {% if halal_filter %}checked{% endif %}>
+                            <label for="halal">Halal Certified</label>
+                        </div>
+                        {% endif %}
+
+                        {% if show_kosher_filter %}
+                        <div class="filter-option">
+                            <input type="checkbox" id="kosher" name="kosher" {% if kosher_filter %}checked{% endif %}>
+                            <label for="kosher">Kosher Certified</label>
+                        </div>
+                        {% endif %}
+
+                        {% if show_vegetarian_filter %}
+                        <div class="filter-option">
+                            <input type="checkbox" id="vegetarian" name="vegetarian" {% if vegetarian_filter %}checked{% endif %}>
+                            <label for="vegetarian">Vegetarian</label>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Location Filters | Not using this filter for this page -->
+                    <!-- <div class="mb-4">
+                        <h6 class="filter-section-title">LOCATION</h6>
+                        {% for location in available_locations %}
+                        <div class="filter-option">
+                            <input type="checkbox" id="location-{{ location|slugify }}" name="location"
+                                value="{{ location }}" {% if location in selected_locations %}checked{% endif %}>
+                            <label for="location-{{ location|slugify }}">{{ location }}</label>
+                        </div>
+                        {% endfor %}
+                    </div> -->
+
+                    <!-- Clear Filters Button -->
+                    {% if selected_cuisines or halal_filter or kosher_filter or vegetarian_filter or selected_locations %}
+                    <button class="btn btn-outline-secondary w-100 mt-3" onclick="clearFilters()">Clear Filters</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Restaurants Listing -->
+        <div class="col-md-9">
+            {% if restaurants %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="text-muted mb-0">Found {{ restaurants|length }} restaurant{{ restaurants|length|pluralize }}
+                </p>
+                {% if selected_cuisines or halal_filter or kosher_filter or vegetarian_filter or selected_locations %}
+                <small class="text-muted">Filters applied</small>
+                {% endif %}
+            </div>
+
+            {% for restaurant in restaurants %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4 class="card-title mb-2">{{ restaurant.business_name }}</h4>
+                            <div class="stall-info mb-2">
+                                <div class="info-line">
+                                    <strong>Cuisine:</strong> {{ restaurant.get_cuisine_types_display }}
+                                </div>
+                                <div class="info-line">
+                                    <strong>Address:</strong> {{ restaurant.address }}
+                                </div>
+                                {% if restaurant.opening_hours %}
+                                <div class="info-line">
+                                    <strong>Hours:</strong> {{ restaurant.opening_hours }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if restaurant.description %}
+                            <p class="card-text text-muted mb-2">{{ restaurant.description|truncatewords:30 }}</p>
+                            {% endif %}
+
+                            <!-- Dietary Certifications Badges -->
+                            <div class="mb-2">
+                                {% if restaurant.is_featured %}
+                                <span class="badge bg-warning">Featured</span>
+                                {% endif %}
+                                {% if restaurant.halal %}
+                                <span class="badge bg-success">Halal Certified</span>
+                                {% endif %}
+                                {% if restaurant.kosher %}
+                                <span class="badge bg-info text-dark">Kosher Certified</span>
+                                {% endif %}
+                                {% if restaurant.vegetarian %}
+                                <span class="badge bg-light text-dark">Vegetarian</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Contact Info -->
+                            <div class="contact-info mt-3 d-flex align-items-center flex-wrap gap-3">
+                                {% if restaurant.phone %}
+                                <small class="text-muted me-3">
+                                    <i class="fas fa-phone me-1"></i>{{ restaurant.phone }}
+                                </small>
+                                {% endif %}
+                                {% if restaurant.website %}
+                                <small class="text-muted">
+                                    <i class="fas fa-globe me-1"></i>
+                                    <a href="{{ restaurant.website }}" target="_blank" class="text-muted">Website</a>
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="article-image-section">
+                                {% if restaurant.business_pix %}
+                                <div class="article-image-container mb-3">
+                                    <img src="{{ restaurant.business_pix.url }}" class="article-image"
+                                        alt="{{ restaurant.business_name }}"
+                                        style="width: 100%; height: 180px; object-fit: cover;">
+                                </div>
+                                {% else %}
+                                <div class="article-image-container text-muted bg-light d-flex align-items-center justify-content-center mb-3"
+                                    style="width: 100%; height: 180px; border-radius: 8px;">
+                                    <div class="text-center">
+                                        <i class="fas fa-utensils fa-2x mb-2"></i>
+                                        <br>
+                                        <small>No Image</small>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Details Button below the picture -->
+                                <div class="text-center">
+                                    <a href="{% url 'webapp:restaurant_detail' restaurant.id %}"
+                                        class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-info-circle me-1"></i>Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="alert alert-info">
+                No restaurants found matching your filters.
+                {% if selected_cuisines or halal_filter or kosher_filter or vegetarian_filter or selected_locations %}
+                <a href="{% url 'webapp:restaurants' %}" class="alert-link">Clear filters</a> to see all restaurants.
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function applyFilters() {
+        // Get selected filters
+        const selectedCuisines = Array.from(document.querySelectorAll('input[name="cuisine"]:checked')).map(cb => cb.value);
+        const halalOnly = document.querySelector('input[name="halal"]:checked') ? 'on' : '';
+        const kosherOnly = document.querySelector('input[name="kosher"]:checked') ? 'on' : '';
+        const vegetarianOnly = document.querySelector('input[name="vegetarian"]:checked') ? 'on' : '';
+        const selectedLocations = Array.from(document.querySelectorAll('input[name="location"]:checked')).map(cb => cb.value);
+
+        // Build URL with filter parameters
+        const params = new URLSearchParams();
+        selectedCuisines.forEach(cuisine => params.append('cuisine', cuisine));
+        if (halalOnly) params.append('halal', halalOnly);
+        if (kosherOnly) params.append('kosher', kosherOnly);
+        if (vegetarianOnly) params.append('vegetarian', vegetarianOnly);
+        selectedLocations.forEach(location => params.append('location', location));
+
+        window.location.href = '{% url "webapp:restaurants" %}?' + params.toString();
+    }
+
+    function clearFilters() {
+        window.location.href = '{% url "webapp:restaurants" %}';
+    }
+
+    // Auto-apply filters when checkboxes change
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+        filterCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                // Add a small delay to show the checkbox state change
+                setTimeout(applyFilters, 100);
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-section-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .filter-option {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        padding: 0.25rem 0;
+    }
+
+    .filter-option input[type="checkbox"] {
+        margin-right: 0.75rem;
+        width: 16px;
+        height: 16px;
+    }
+
+    .filter-option label {
+        margin-bottom: 0;
+        font-size: 0.9rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+    }
+
+    .stall-info {
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .info-line {
+        margin-bottom: 0.3rem;
+        line-height: 1.4;
+    }
+
+    .info-line strong {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .article-image-container {
+        text-align: center;
+    }
+
+    .article-image {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .contact-info {
+        border-top: 1px solid #e9ecef;
+        padding-top: 0.5rem;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* No hover effects */
+    .card:hover {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}

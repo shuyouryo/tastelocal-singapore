@@ -1,0 +1,323 @@
+<!-- webapp/templates/webapp/food_stall_detail.html -->
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'webapp:homepage' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'webapp:places_eat' %}">Places to Eat</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'webapp:food_stalls' %}">Food Stalls</a></li>
+            <li class="breadcrumb-item active">{{ stall.business_name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-md-8">
+            <!-- Business Header -->
+            <div class="mb-4">
+                <h1 class="display-5 fw-bold mb-3">{{ stall.business_name }}</h1>
+
+                {# -------------- RATING + BUTTON -------------- #}
+                <div class="d-flex align-items-center mb-3">
+                    {#----- plain text rating -----#}
+                    <span class="fs-6 me-3">
+                        {{ stall.average_rating|default:"0.0" }} ({{ stall.total_reviews }} review{{ stall.total_reviews|pluralize }})
+                    </span>
+
+                    {#----- action button -----#}
+                    {% if user.is_authenticated %}
+                    {% if user_rating %}
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                        data-bs-target="#reviewModal">
+                        Change your Review
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#reviewModal">
+                        Make your Review
+                    </button>
+                    {% endif %}
+                    {% endif %}
+                </div>
+                {# -------------- END RATING + BUTTON -------------- #}
+
+                <!-- Service Badges -->
+                {% if stall.service_badges %}
+                <div class="mb-3">
+                    {% for badge in stall.service_badges %}
+                    <span class="badge {{ badge.class }} d-inline-flex align-items-center me-2 mb-2">
+                        {% if badge.icon %}
+                        <i class="{{ badge.icon }} me-1"></i>
+                        {% endif %}
+                        {{ badge.text }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if stall.description %}
+                <p class="lead fs-4">{{ stall.description }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Menu Highlights -->
+            {% if stall.menu_items.all %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Menu Highlights</h3>
+                    <div class="row">
+                        {% for item in stall.menu_items.all|dictsort:"dish_name" %}
+                        <div class="col-12 mb-4">
+                            <div class="card">
+                                <div class="row g-0">
+                                    {% if item.dish_pix %}
+                                    <div class="col-md-4">
+                                        <img src="{{ item.dish_pix.url }}" class="menu-item-image-full"
+                                            alt="{{ item.dish_name }}">
+                                    </div>
+                                    <div class="col-md-8">
+                                        {% else %}
+                                        <div class="col-md-12">
+                                            {% endif %}
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{ item.dish_name }}</h5>
+                                                <p class="card-text text-muted">{{ item.dish_description }}</p>
+                                                <p class="card-text"><strong>{{ item.display_price }}</strong></p>
+                                                <div class="d-flex gap-2">
+                                                    {% if item.is_vegetarian %}
+                                                    <span class="badge bg-info text-dark">Vegetarian</span>
+                                                    {% endif %}
+                                                    {% if item.is_vegan %}
+                                                    <span class="badge bg-success">Vegan</span>
+                                                    {% endif %}
+                                                    {% if item.is_market_price %}
+                                                    <span class="badge bg-secondary">Market Price</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div> <!-- End Left Column (col-md-8) -->
+
+            <!-- Right Sidebar -->
+            <div class="col-md-4">
+                <!-- Business Image -->
+                {% if stall.business_pix %}
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <img src="{{ stall.business_pix.url }}" class="sidebar-business-image"
+                            alt="{{ stall.business_name }}">
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Cuisine Type -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Cuisine Type</h5>
+                        <p class="card-text">{{ stall.get_cuisine_types_display }}</p>
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Address</h5>
+                        <p class="card-text">{{ stall.address }}</p>
+                    </div>
+                </div>
+
+                <!-- Opening Hours -->
+                {% if stall.opening_hours %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Opening Hours</h5>
+                        <p class="card-text">{{ stall.opening_hours }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Map -->
+                {% if stall.latitude and stall.longitude %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Location</h5>
+                        <div id="map" style="height: 200px; border-radius: 8px;"></div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Contact & Booking -->
+                {% if stall.phone or stall.website %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Contact & Booking</h5>
+                        {% if stall.phone %}
+                        <p class="card-text">
+                            <i class="fas fa-phone text-muted me-2"></i>
+                            {{ stall.phone }}
+                        </p>
+                        {% endif %}
+                        {% if stall.website %}
+                        <p class="card-text">
+                            <i class="fas fa-globe text-muted me-2"></i>
+                            <a href="{{ stall.website }}" target="_blank">Visit Website</a>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div> <!-- End Right Sidebar (col-md-4) -->
+        </div> <!-- End Row -->
+
+        <!-- Review Modal -->
+        {% if user.is_authenticated %}
+        <div class="modal fade" id="reviewModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Rate {{ stall.business_name }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" action="{% url 'webapp:submit_rating' stall.id %}" id="reviewForm">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Your Rating</label>
+                                <div class="star-rating">
+                                    {% for i in "12345" %}
+                                    <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" class="d-none"
+                                        required>
+                                    <label for="star{{ i }}" class="star-label">★</label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" form="reviewForm" class="btn btn-primary">Submit Rating</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endblock %}
+
+    {% block extra_css %}
+    <style>
+        .sidebar-business-image {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .menu-item-image-full {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px 0 0 8px;
+        }
+
+        .card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        /* Star Rating */
+        .star-rating {
+            display: flex;
+            gap: 5px;
+        }
+
+        .star-label {
+            font-size: 2rem;
+            color: #ddd;
+            cursor: pointer;
+        }
+
+        .star-rating input:checked+.star-label {
+            color: #ffc107;
+        }
+    </style>
+    {% endblock %}
+
+    {% block extra_scripts %}
+    <!-- Map Script -->
+    {% if stall.latitude and stall.longitude %}
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Store values in variables first
+            const stallLatitude = parseFloat("{{ stall.latitude }}");
+            const stallLongitude = parseFloat("{{ stall.longitude }}");
+            const stallBusinessName = "{{ stall.business_name|escapejs }}";
+            const stallAddress = "{{ stall.address|escapejs }}";
+
+            // Initialize the map
+            const map = L.map('map').setView([stallLatitude, stallLongitude], 15);
+
+            // Add tile layer (OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Add marker for the stall location
+            L.marker([stallLatitude, stallLongitude])
+                .addTo(map)
+                .bindPopup('<strong>' + stallBusinessName + '</strong><br>' + stallAddress);
+        });
+    </script>
+    {% endif %}
+
+    <!-- Star Rating Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const starInputs = document.querySelectorAll('.star-rating input');
+            const starLabels = document.querySelectorAll('.star-label');
+
+            // Update stars when a rating is selected
+            starInputs.forEach(input => {
+                input.addEventListener('change', function () {
+                    const rating = this.value;
+
+                    // Update all stars based on selected rating
+                    starLabels.forEach((label, index) => {
+                        const starValue = index + 1;
+                        if (starValue <= rating) {
+                            label.style.color = '#ffc107';
+                        } else {
+                            label.style.color = '#ddd';
+                        }
+                    });
+                });
+            });
+
+            // Form submission handling
+            const reviewForm = document.getElementById('reviewForm');
+            if (reviewForm) {
+                reviewForm.addEventListener('submit', function (e) {
+                    const ratingInput = document.querySelector('input[name="rating"]:checked');
+                    if (!ratingInput) {
+                        e.preventDefault();
+                        alert('Please select a rating before submitting.');
+                        return false;
+                    }
+                });
+            }
+        });
+    </script>
+    {% endblock %}

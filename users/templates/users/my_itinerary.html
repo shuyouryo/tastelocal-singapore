@@ -1,0 +1,448 @@
+<!-- users/templates/users/my_itinerary.html -->
+{% extends "webapp/base.html" %}
+
+{% block title %}My Itinerary - TasteLocal Singapore{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>My Itinerary</h1>
+                <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary">Back to Profile</a>
+            </div>
+
+            <!-- Calendar and Notes Section -->
+            <div class="row">
+                <!-- Calendar -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Calendar</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="calendar" style="min-height: 400px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes Section -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Notes for <span id="selectedDate"></span></h5>
+                            <button class="btn btn-sm btn-primary" id="addNoteBtn">Add Note</button>
+                        </div>
+                        <div class="card-body">
+                            <div id="notesList">
+                                <!-- Notes will be loaded here -->
+                                <p class="text-muted text-center">Select a date to view notes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Note Modal -->
+<div class="modal fade" id="addNoteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Note for <span id="modalDate"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="noteForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="noteDate" name="date">
+                    <div class="mb-3">
+                        <label for="noteTitle" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="noteTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="noteContent" class="form-label">Note</label>
+                        <textarea class="form-control" id="noteContent" name="content" rows="4" required></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Save Note</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<style>
+    .fc-toolbar {
+        padding: 1rem;
+        margin-bottom: 0;
+    }
+
+    .fc-header-toolbar {
+        margin-bottom: 1.5em !important;
+    }
+
+    /* Calendar button styling */
+    .fc .fc-button-primary {
+        background-color: #e74c3c;
+        border-color: #e74c3c;
+    }
+
+    .fc .fc-button-primary:hover {
+        background-color: #c0392b;
+        border-color: #c0392b;
+    }
+
+    .fc .fc-button-primary:not(:disabled).fc-button-active,
+    .fc .fc-button-primary:not(:disabled):active {
+        background-color: #c0392b;
+        border-color: #c0392b;
+    }
+
+    /* Remove underlines from calendar elements */
+    .fc a {
+        text-decoration: none !important;
+        color: #000 !important;
+        /* Black text for days/dates */
+    }
+
+    .fc-daygrid-day-number {
+        color: #000 !important;
+        /* Black for date numbers */
+        font-weight: normal;
+        text-decoration: none !important;
+    }
+
+    .fc-col-header-cell-cushion {
+        color: #000 !important;
+        /* Black for day headers (Mon, Tue, etc) */
+        text-decoration: none !important;
+    }
+
+    .fc-daygrid-day-top {
+        justify-content: center;
+    }
+
+    /* Blue for non-button elements */
+    .note-item {
+        border-left: 4px solid #007bff;
+        /* Blue border */
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 0 8px 8px 0;
+        transition: all 0.2s ease;
+    }
+
+    .note-item:hover {
+        background-color: #e9ecef;
+        transform: translateX(2px);
+    }
+
+    .note-item h6 {
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .note-item p {
+        margin-bottom: 0.5rem;
+        color: #666;
+        line-height: 1.4;
+    }
+
+    .note-item small {
+        color: #999;
+    }
+
+    .move-up-btn,
+    .move-down-btn {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+    }
+
+    .move-up-btn:disabled,
+    .move-down-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+
+    .reorder-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        margin-left: 0.5rem;
+    }
+
+    .order-badge {
+        min-width: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Calendar event styling - blue */
+    .fc-event {
+        background-color: #007bff !important;
+        /* Blue events */
+        border-color: #007bff !important;
+        color: white !important;
+    }
+
+    .fc-event:hover {
+        background-color: #0056b3 !important;
+        border-color: #0056b3 !important;
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let selectedDate = null;
+        const calendarEl = document.getElementById('calendar');
+
+        // Initialize calendar
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next',
+                center: 'title',
+                right: 'today'
+            },
+            buttonText: {
+                today: 'Today'
+            },
+            dateClick: function (info) {
+                selectedDate = info.dateStr;
+                document.getElementById('selectedDate').textContent = formatDate(selectedDate);
+                loadNotes(selectedDate);
+            },
+            events: function (info, successCallback, failureCallback) {
+                // Determine if we need all notes or just for a date range
+                let url = "{% url 'users:get_itinerary_notes' %}";
+
+                // If calendar is showing a specific date range, filter by it
+                if (info.start && info.end) {
+                    url = `${url}?start=${info.start.toISOString()}&end=${info.end.toISOString()}`;
+                }
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Sort notes by order before creating events
+                        const sortedNotes = [...data.notes].sort((a, b) => a.order - b.order);
+
+                        const events = sortedNotes.map((note, index) => ({
+                            id: note.id,
+                            title: `${index + 1}. ${note.title}`,
+                            start: note.date,
+                            allDay: true,
+                            backgroundColor: '#007bff',  // Blue for events
+                            borderColor: '#007bff',
+                            textColor: '#ffffff',  // White text on blue
+                            extendedProps: {
+                                order: note.order,
+                                content: note.content,
+                                createdAt: note.created_at
+                            }
+                        }));
+
+                        successCallback(events);
+                    })
+                    .catch(error => {
+                        console.error('Error loading calendar events:', error);
+                        failureCallback(error);
+                    });
+            }
+        });
+
+        calendar.render();
+
+        // Add Note Button
+        document.getElementById('addNoteBtn').addEventListener('click', function () {
+            if (selectedDate) {
+                document.getElementById('modalDate').textContent = formatDate(selectedDate);
+                document.getElementById('noteDate').value = selectedDate;
+                new bootstrap.Modal(document.getElementById('addNoteModal')).show();
+            } else {
+                alert('Please select a date first.');
+            }
+        });
+
+        // Note Form Submission
+        document.getElementById('noteForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            saveNote();
+        });
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-SG', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        function loadNotes(date) {
+            fetch(`{% url 'users:get_itinerary_notes' %}?date=${date}`)
+                .then(response => response.json())
+                .then(data => {
+                    const notesList = document.getElementById('notesList');
+                    if (data.notes.length > 0) {
+                        // Sort notes by order
+                        const sortedNotes = [...data.notes].sort((a, b) => a.order - b.order);
+
+                        let html = '';
+                        sortedNotes.forEach((note, index) => {
+                            html += `
+                                <div class="note-item" data-note-id="${note.id}">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="d-flex flex-grow-1">
+                                            <div class="order-badge me-2">
+                                                <span class="badge bg-primary rounded-circle" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
+                                                    ${index + 1}
+                                                </span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">${note.title}</h6>
+                                                <p class="mb-2 text-muted small">${note.content}</p>
+                                                <small class="text-muted">Added on ${new Date(note.created_at).toLocaleDateString('en-SG')}</small>
+                                            </div>
+                                        </div>
+                                        <div class="reorder-buttons">
+                                            <button class="btn btn-sm btn-outline-secondary move-up-btn" ${index === 0 ? 'disabled' : ''}>
+                                                <i class="fas fa-arrow-up"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary move-down-btn" ${index === sortedNotes.length - 1 ? 'disabled' : ''}>
+                                                <i class="fas fa-arrow-down"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        notesList.innerHTML = html;
+
+                        // Add event listeners for reorder buttons
+                        addReorderEventListeners();
+                    } else {
+                        notesList.innerHTML = '<p class="text-muted text-center">No notes for this date</p>';
+                    }
+                });
+        }
+
+        function addReorderEventListeners() {
+            // Move up buttons
+            document.querySelectorAll('.move-up-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const noteItem = this.closest('.note-item');
+                    const noteId = noteItem.getAttribute('data-note-id');
+                    reorderNote(noteId, 'up');
+                });
+            });
+
+            // Move down buttons
+            document.querySelectorAll('.move-down-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const noteItem = this.closest('.note-item');
+                    const noteId = noteItem.getAttribute('data-note-id');
+                    reorderNote(noteId, 'down');
+                });
+            });
+        }
+
+        function reorderNote(noteId, direction) {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch("{% url 'users:reorder_itinerary_notes' %}", {
+                method: 'POST',
+                body: JSON.stringify({
+                    note_id: parseInt(noteId),
+                    direction: direction
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Refresh BOTH notes list AND calendar
+                        loadNotes(selectedDate);
+                        calendar.refetchEvents();  // This reloads calendar events with new order
+                    } else {
+                        alert('Error reordering note: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error reordering note');
+                });
+        }
+
+        function saveNote() {
+            const formData = new FormData(document.getElementById('noteForm'));
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch("{% url 'users:save_itinerary_note' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('addNoteModal')).hide();
+                        document.getElementById('noteForm').reset();
+                        loadNotes(selectedDate);
+                        calendar.refetchEvents();
+                    }
+                });
+        }
+
+        window.deleteNote = function (noteId) {
+            if (confirm('Are you sure you want to delete this note?')) {
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                fetch("{% url 'users:delete_itinerary_note' %}", {
+                    method: 'POST',
+                    body: JSON.stringify({ note_id: noteId }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            loadNotes(selectedDate);
+                            calendar.refetchEvents();
+                        }
+                    });
+            }
+        };
+    });
+</script>
+{% endblock %}

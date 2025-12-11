@@ -1,0 +1,230 @@
+<!-- webapp/templates/webapp/culinary_events.html -->
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'webapp:homepage' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'webapp:places_eat' %}">Places to Eat</a></li>
+            <li class="breadcrumb-item active">Culinary Events</li>
+        </ol>
+    </nav>
+
+    <h1>Culinary Events & Pop-ups</h1>
+    <p class="lead">Discover temporary food events, pop-ups, and special culinary experiences</p>
+
+    <div class="row mt-4">
+        <!-- Filters Sidebar (same style as food_stalls.html) -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">FILTERS</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Cuisine Filters -->
+                    <div class="mb-4">
+                        <h6 class="filter-section-title">CUISINE</h6>
+                        {% for cuisine in available_cuisines %}
+                        <div class="filter-option">
+                            <input type="checkbox" id="cuisine-{{ cuisine|slugify }}" name="cuisine"
+                                value="{{ cuisine }}" {% if cuisine in selected_cuisines %}checked{% endif %}>
+                            <label for="cuisine-{{ cuisine|slugify }}">{{ cuisine }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Clear Filters Button -->
+                    {% if selected_cuisines %}
+                    <button class="btn btn-outline-secondary w-100 mt-3" onclick="clearFilters()">Clear Filters</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Events Listing (same card/grid structure as food_stalls.html) -->
+        <div class="col-md-9">
+            {% if events %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="text-muted mb-0">Found {{ events|length }} event{{ events|length|pluralize }}</p>
+                {% if selected_cuisines %}
+                <small class="text-muted">Filters applied</small>
+                {% endif %}
+            </div>
+
+            {% for event in events %}
+            <a href="{% url 'webapp:culinary_event_detail' event.id %}" class="card-link">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h4 class="card-title mb-2">{{ event.event_name }}</h4>
+                                <div class="stall-info mb-2">
+                                    <div class="info-line">
+                                        <strong>Event type:</strong>
+                                        <span class="badge bg-primary">{{ event.get_event_type_display }}</span>
+                                    </div>
+                                    <div class="info-line">
+                                        <strong>Dates:</strong>
+                                        {{ event.event_start_date|date:"d/m/Y" }} – {{ event.event_end_date|date:"d/m/Y" }}
+                                    </div>
+                                    {% if event.event_cuisine.all %}
+                                    <div class="info-line">
+                                        <strong>Cuisine:</strong>
+                                        {% for c in event.event_cuisine.all %}
+                                        <span class="badge bg-light text-dark me-1">{{ c.name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    {% if event.vendor %}
+                                    <div class="info-line">
+                                        <strong>Vendor:</strong> {{ event.vendor.business_name }}
+                                    </div>
+                                    {% endif %}
+                                    {% if event.event_address %}
+                                    <div class="info-line">
+                                        <strong>Location:</strong> {{ event.event_address|truncatewords:12 }}
+                                    </div>
+                                    {% endif %}
+                                    {% if event.event_description %}
+                                    <p class="card-text text-muted mb-2 mt-2">{{ event.event_description|truncatewords:30 }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Status badges -->
+                                <div class="mb-2">
+                                    {% if event.is_featured %}<span class="badge bg-warning">Featured</span>{% endif %}
+                                    {% if event.is_active %}<span class="badge bg-success">Active</span>
+                                    {% else %}<span class="badge bg-secondary">Ended</span>{% endif %}
+                                </div>
+
+                                <!-- Contact line -->
+                                <div class="contact-info mt-3 d-flex align-items-center flex-wrap gap-3">
+                                    {% if event.vendor.phone %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-phone me-1"></i>{{ event.vendor.phone }}
+                                    </small>
+                                    {% endif %}
+                                
+                                    {% if event.event_website %}
+                                    <small class="text-muted">
+                                        <i class="me-3 fas fa-globe me-1"></i>
+                                        <a href="{{ event.event_website }}" target="_blank" class="text-muted">Event Website</a>
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Image column (same 120 px height as food_stalls.html) -->
+                            <div class="col-md-4">
+                                {% if event.event_pix %}
+                                <div class="business-image-container">
+                                    <img src="{{ event.event_pix.url }}" class="business-image"
+                                        alt="{{ event.event_name }}">
+                                </div>
+                                {% elif event.vendor.business_pix %}
+                                <div class="business-image-container">
+                                    <img src="{{ event.vendor.business_pix.url }}" class="business-image"
+                                        alt="{{ event.vendor.business_name }}">
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+
+            {% else %}
+            <div class="alert alert-info">
+                No culinary events found.
+                {% if selected_cuisines %}
+                <a href="{% url 'webapp:culinary_events' %}" class="alert-link">Clear filters</a> to see all events.
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function applyFilters() {
+        const selectedCuisines = Array.from(document.querySelectorAll('input[name="cuisine"]:checked')).map(cb => cb.value);
+        const params = new URLSearchParams();
+        selectedCuisines.forEach(c => params.append('cuisine', c));
+        window.location.href = '{% url "webapp:culinary_events" %}?' + params.toString();
+    }
+    function clearFilters() {
+        window.location.href = '{% url "webapp:culinary_events" %}';
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb =>
+            cb.addEventListener('change', () => setTimeout(applyFilters, 100))
+        );
+    });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* same filter & card styles as food_stalls.html */
+    .filter-section-title {
+        font-size: .8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+
+    .filter-option {
+        display: flex;
+        align-items: center;
+        margin-bottom: .5rem;
+    }
+
+    .filter-option input {
+        margin-right: .75rem;
+    }
+
+    .stall-info {
+        font-size: .9rem;
+        color: #555;
+    }
+
+    .info-line {
+        margin-bottom: .3rem;
+        line-height: 1.4;
+    }
+
+    .info-line strong {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .business-image-container {
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .business-image {
+        max-width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .contact-info {
+        border-top: 1px solid #e9ecef;
+        padding-top: .5rem;
+    }
+
+    .card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+</style>
+{% endblock %}

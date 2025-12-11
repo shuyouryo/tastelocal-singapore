@@ -1,0 +1,59 @@
+<!-- webapp/templates/webapp/partials/article_search_card.html -->
+<div class="card h-100 shadow-sm position-relative">
+    <!-- Image -->
+    {% if result.image_url %}
+    <img src="{{ result.image_url }}" class="card-img-top" alt="{{ result.title }}"
+        style="height: 180px; object-fit: cover;">
+    {% else %}
+    <div class="card-img-top bg-light d-flex align-items-center justify-content-center text-muted"
+        style="height: 180px;">
+        <i class="fas fa-newspaper fa-3x"></i>
+    </div>
+    {% endif %}
+
+    <div class="card-body d-flex flex-column">
+        <!-- Badges -->
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <span class="badge bg-success"><i class="fas fa-newspaper me-1"></i> Article</span>
+            {% if result.is_featured %}
+            <span class="badge bg-warning text-dark"><i class="fas fa-star me-1"></i> Featured</span>
+            {% endif %}
+        </div>
+
+        <!-- Title -->
+        <h5 class="card-title mb-2">{{ result.title }}</h5>
+
+        <!-- Meta -->
+        <div class="mb-2 small text-muted">
+            <div><i class="fas fa-user-edit me-1"></i> {{ result.author }}</div>
+            <div><i class="fas fa-calendar me-1"></i> {{ result.published_date }}</div>
+            {% if result.read_time %}<div><i class="fas fa-clock me-1"></i> {{ result.read_time }} read</div>{% endif %}
+        </div>
+
+        <!-- Description -->
+        <p class="card-text text-muted small mb-3 flex-grow-1">
+            {{ result.description|truncatewords:20 }}
+        </p>
+
+        <!-- Keywords -->
+        {% if result.keywords %}
+        <div class="mb-2">
+            {% for k in result.keywords %}
+            <span class="badge bg-light text-dark me-1 mb-1" style="font-size: 0.7em;">{{ k }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer + link -->
+    <div class="card-footer bg-transparent border-top">
+        <a href="{{ result.url }}" class="btn btn-sm btn-success stretched-link">
+            Read Story <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+        {% if result.comment_count %}
+        <span class="badge bg-light text-dark float-end" style="font-size: 0.7em;">
+            <i class="fas fa-comment"></i> {{ result.comment_count }}
+        </span>
+        {% endif %}
+    </div>
+</div>

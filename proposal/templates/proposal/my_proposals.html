@@ -1,0 +1,32 @@
+<!-- proposal/templates/proposal/my_proposals.html -->
+{% extends 'proposal/base_generic.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>My Proposals</h2>
+
+    {% if proposals %}
+    <div class="list-group">
+        {% for p in proposals %}
+        <a href="{% url 'proposal:detail' p.id %}"
+            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            <div>
+                <strong>Proposal #{{ p.id }}</strong>
+                <span class="text-muted ms-2">
+                    {{ p.sender.user.first_name }} {{ p.sender.user.last_name }}, {{ p.sender.business_name|default:p.sender.company_name }} → {{ p.receiver.user.first_name }} {{ p.receiver.user.last_name }}, {{ p.receiver.business_name|default:p.receiver.company_name }}
+                </span>
+                <br>
+                <small class="text-muted">
+                    {{ p.created_at|date:"d/m/Y H:i" }} – {{ p.get_status_display }}
+                </small>
+            </div>
+            <span class="badge bg-primary rounded-pill">
+                {{ p.get_status_display }}
+            </span>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">No proposals yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,303 @@
+<!-- webapp/templates/webapp/search_results.html -->
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block title %}Search Results - TasteLocal Singapore{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Search Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 mb-3">Search Results</h1>
+
+            <!-- Search Form -->
+            <form action="{% url 'webapp:search' %}" method="get" class="d-flex mb-4">
+                <input type="text" name="q" class="form-control form-control-lg" value="{{ query }}"
+                    placeholder="Find food stalls, restaurants, tours, and more!" aria-label="Search food experiences">
+                <button type="submit" class="btn btn-danger btn-lg ms-2">Search</button>
+            </form>
+
+            {% if query %}
+            <p class="lead">
+                {% if total_results == 0 %}
+                No results found for "{{ query }}"
+                {% else %}
+                Found {{ total_results }} result{{ total_results|pluralize }} for "{{ query }}"
+                {% endif %}
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if query and total_results > 0 %}
+    <!-- Results Section -->
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">FILTER RESULTS</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Type Filters -->
+                    <div class="mb-4">
+                        <h6 class="filter-section-title">RESULT TYPE</h6>
+                        <div class="filter-option">
+                            <input type="checkbox" id="type-vendor" name="result_type" value="vendor">
+                            <label for="type-vendor">Vendors</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="type-event" name="result_type" value="event">
+                            <label for="type-event">Events</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="type-article" name="result_type" value="article">
+                            <label for="type-article">Articles</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="type-tour" name="result_type" value="tour">
+                            <label for="type-tour">Tours</label>
+                        </div>
+                    </div>
+
+                    <!-- Category Filters for Vendors -->
+                    <div class="mb-4">
+                        <h6 class="filter-section-title">VENDOR TYPE</h6>
+                        <div class="filter-option">
+                            <input type="checkbox" id="vendor-type-restaurant" name="vendor_type" value="restaurant">
+                            <label for="vendor-type-restaurant">Restaurants</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="vendor-type-stall" name="vendor_type" value="stall">
+                            <label for="vendor-type-stall">Food Stalls</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Listing -->
+        <div class="col-md-9">
+            <!-- All results initially visible -->
+            {% if results.primary %}
+            <!-- Primary Results -->
+            <div class="mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="text-danger mb-0">Best Matches</h2>
+                    <span class="badge bg-danger">Exact matches in titles</span>
+                </div>
+
+                <div class="row" id="primary-results">
+                    {% for result in results.primary %}
+                    <div class="col-md-6 col-lg-4 mb-4 result-card" data-type="{{ result.type }}"
+                        data-vendor-type="{{ result.vendor_type|default:'' }}">
+                        {% if result.type == 'vendor' %}
+                        {% include 'webapp/partials/vendor_search_card.html' with result=result %}
+                        {% elif result.type == 'event' %}
+                        {% include 'webapp/partials/event_search_card.html' with result=result %}
+                        {% elif result.type == 'article' %}
+                        {% include 'webapp/partials/article_search_card.html' with result=result %}
+                        {% elif result.type == 'tour' %}
+                        {% include 'webapp/partials/tours_search_card.html' with result=result %}
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if results.secondary %}
+            <!-- Secondary Results -->
+            <div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2>Other Results</h2>
+                    <span class="badge bg-secondary">Related matches</span>
+                </div>
+
+                <div class="row" id="secondary-results">
+                    {% for result in results.secondary %}
+                    <div class="col-md-6 col-lg-4 mb-4 result-card" data-type="{{ result.type }}"
+                        data-vendor-type="{{ result.vendor_type|default:'' }}">
+                        {% if result.type == 'vendor' %}
+                        {% include 'webapp/partials/vendor_search_card.html' with result=result %}
+                        {% elif result.type == 'event' %}
+                        {% include 'webapp/partials/event_search_card.html' with result=result %}
+                        {% elif result.type == 'article' %}
+                        {% include 'webapp/partials/article_search_card.html' with result=result %}
+                        {% elif result.type == 'tour' %}
+                        {% include 'webapp/partials/tours_search_card.html' with result=result %}
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- No Results Message (hidden by default) -->
+            <div id="no-results-message" class="text-center py-5" style="display: none;">
+                <div class="mb-4">
+                    <i class="fas fa-search fa-4x text-muted"></i>
+                </div>
+                <h3 class="mb-3">No results match your filters</h3>
+                <p class="text-muted mb-4">Try selecting different filter options</p>
+            </div>
+        </div>
+    </div>
+    {% elif query %}
+    <!-- No Results -->
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="fas fa-search fa-4x text-muted"></i>
+        </div>
+        <h3 class="mb-3">No results found</h3>
+        <p class="text-muted mb-4">Try different keywords or check your spelling</p>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Search Tips:</h5>
+                        <ul class="text-start">
+                            <li>Try more general terms</li>
+                            <li>Check your spelling</li>
+                            <li>Search for specific dishes (e.g., "Hainanese Chicken Rice")</li>
+                            <li>Search by location (e.g., "Chinatown", "Lau Pa Sat")</li>
+                            <li>Search by cuisine (e.g., "Chinese", "Malay", "Indian")</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Track current filter state
+    let currentFilters = {
+        result_types: [],
+        vendor_types: []
+    };
+
+    // Filter results by type
+    function filterResults() {
+        const resultCards = document.querySelectorAll('.result-card');
+        const selectedTypes = Array.from(document.querySelectorAll('input[name="result_type"]:checked'))
+            .map(cb => cb.value);
+        const selectedVendorTypes = Array.from(document.querySelectorAll('input[name="vendor_type"]:checked'))
+            .map(cb => cb.value);
+
+        // Store current filters
+        currentFilters.result_types = selectedTypes;
+        currentFilters.vendor_types = selectedVendorTypes;
+
+        let visibleCount = 0;
+
+        resultCards.forEach(card => {
+            const cardType = card.getAttribute('data-type');
+            const cardVendorType = card.getAttribute('data-vendor-type');
+
+            // If no filters selected, show everything
+            if (selectedTypes.length === 0 && selectedVendorTypes.length === 0) {
+                card.style.display = 'block';
+                visibleCount++;
+                return;
+            }
+
+            let showCard = false;
+
+            // Check result type filter
+            if (selectedTypes.length > 0) {
+                showCard = selectedTypes.includes(cardType);
+            } else {
+                showCard = true; // If no type filter, show all types
+            }
+
+            // Additional filtering for vendors
+            if (showCard && cardType === 'vendor') {
+                if (selectedVendorTypes.length > 0 && cardVendorType) {
+                    showCard = selectedVendorTypes.includes(cardVendorType);
+                } else if (selectedVendorTypes.length > 0) {
+                    showCard = false; // Vendor type filter active but card has no vendor type
+                }
+            }
+
+            if (showCard) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Show/hide no results message
+        const noResultsMsg = document.getElementById('no-results-message');
+        if (visibleCount === 0) {
+            noResultsMsg.style.display = 'block';
+        } else {
+            noResultsMsg.style.display = 'none';
+        }
+    }
+
+    // Initialize event listeners
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initially show all results (no filters checked)
+        document.querySelectorAll('.result-card').forEach(card => card.style.display = 'block');
+        document.getElementById('no-results-message').style.display = 'none';
+
+        // Reset filters
+        currentFilters.result_types = [];
+        currentFilters.vendor_types = [];
+
+        // Add change event listeners to all checkboxes
+        document.querySelectorAll('input[name="result_type"], input[name="vendor_type"]').forEach(checkbox => {
+            checkbox.addEventListener('change', filterResults);
+        });
+    });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-section-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .filter-option {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        padding: 0.25rem 0;
+    }
+
+    .filter-option input[type="checkbox"] {
+        margin-right: 0.75rem;
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+    .filter-option label {
+        margin-bottom: 0;
+        font-size: 0.9rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    /* Make cards responsive */
+    @media (max-width: 768px) {
+        .col-md-6 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+    }
+</style>
+{% endblock %}

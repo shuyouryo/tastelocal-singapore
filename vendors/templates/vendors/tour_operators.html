@@ -1,0 +1,253 @@
+<!-- vendors/templates/vendors/tour_operators.html -->
+{% extends 'vendors/base.html' %}
+
+{% block title %}Tour Operators - TasteLocal Singapore Vendor{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 bg-white shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 text-dark mb-2">Tour Operators</h1>
+                            <p class="text-muted mb-0">Connect with certified tour operators for partnerships</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary" data-bs-toggle="modal"
+                                data-bs-target="#filterModal">
+                                <i class="fas fa-filter me-2"></i>Filter
+                            </button>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#partnershipModal">
+                                <i class="fas fa-handshake me-2"></i>Partnership Info
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card stats-card border-0 bg-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="p-3 bg-light rounded me-3">
+                            <i class="fas fa-users text-primary fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Total Operators</h6>
+                            <h4 class="text-dark mb-0">{{ tour_operators|length }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card stats-card border-0 bg-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="p-3 bg-light rounded me-3">
+                            <i class="fas fa-certificate text-success fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Verified</h6>
+                            <h4 class="text-dark mb-0">{{ verified_count }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card stats-card border-0 bg-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="p-3 bg-light rounded me-3">
+                            <i class="fas fa-shield-alt text-info fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Insured</h6>
+                            <h4 class="text-dark mb-0">{{ insured_count }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card stats-card border-0 bg-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="p-3 bg-light rounded me-3">
+                            <i class="fas fa-award text-warning fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">NATAS Members</h6>
+                            <h4 class="text-dark mb-0">{{ natas_count }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tour Operators List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 bg-white shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="card-title text-dark mb-0">Available Tour Operators</h5>
+                </div>
+                <div class="card-body">
+                    {% if tour_operators %}
+                    <div class="row">
+                        {% for operator in tour_operators %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                    <!-- Header with verification badge -->
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="card-title text-dark mb-0">{{ operator.company_name }}</h6>
+                                        {% if operator.is_verified %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Verified
+                                        </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Description -->
+                                    {% if operator.description %}
+                                    <p class="text-muted small mb-3">{{ operator.description|truncatewords:20 }}</p>
+                                    {% endif %}
+
+                                    <!-- Certifications -->
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block mb-1">
+                                            <i class="fas fa-certificate me-1"></i>Certifications:
+                                        </small>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            {% if operator.singapore_license_number %}
+                                            <span class="badge bg-primary">STB Licensed</span>
+                                            {% endif %}
+                                            {% if operator.natas_member %}
+                                            <span class="badge bg-info">NATAS</span>
+                                            {% endif %}
+                                            {% if operator.has_insurance %}
+                                            <span class="badge bg-success">Insured</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <!-- Contact Information -->
+                                    <div class="mb-3">
+                                        {% if operator.business_phone %}
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-phone me-1"></i>{{ operator.business_phone }}
+                                        </small>
+                                        {% endif %}
+                                        {% if operator.business_email %}
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-envelope me-1"></i>{{ operator.business_email }}
+                                        </small>
+                                        {% endif %}
+                                        {% if operator.website %}
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-globe me-1"></i>
+                                            <a href="{{ operator.website }}" target="_blank"
+                                                class="text-info">Website</a>
+                                        </small>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="d-flex gap-2">
+                                        <!-- NEW – single “Send Proposal” button - COMING SOON (disabled) -->
+                                        <button class="btn btn-outline-secondary btn-sm flex-fill" disabled
+                                            style="cursor: not-allowed;">
+                                            <i class="fas fa-handshake me-1"></i>Send Proposal
+                                            <small class="text-muted ms-1">(Coming Soon)</small>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-users text-muted fs-1 mb-3"></i>
+                        <h5 class="text-muted">No Tour Operators Available</h5>
+                        <p class="text-muted">Check back later for tour operator partnerships.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Partnership Info Modal -->
+<div class="modal fade" id="partnershipModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tour Partnership Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Benefits of Tour Partnerships:</h6>
+                <ul class="mb-3">
+                    <li>Increased customer exposure</li>
+                    <li>Steady stream of visitors during off-peak hours</li>
+                    <li>Marketing through tour operator channels</li>
+                    <li>Potential for bulk bookings</li>
+                </ul>
+
+                <h6>What to Expect:</h6>
+                <ul>
+                    <li>Tour operators will contact you directly</li>
+                    <li>Discuss partnership terms and commission</li>
+                    <li>Set up special group arrangements</li>
+                    <li>Coordinate timing and group sizes</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stats-card {
+        border: none;
+        border-radius: 0.5rem;
+        transition: transform 0.2s;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+    }
+
+    .btn-primary {
+        background-color: #e74c3c;
+        border-color: #e74c3c;
+    }
+
+    .btn-primary:hover {
+        background-color: #c0392b;
+        border-color: #c0392b;
+    }
+</style>
+{% endblock %}

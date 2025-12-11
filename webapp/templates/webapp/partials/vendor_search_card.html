@@ -1,0 +1,129 @@
+<!-- webapp/templates/webapp/partials/vendor_search_card.html -->
+<a href="{{ result.url }}" class="card-link">
+    <div class="card h-100 shadow-sm">
+        <!-- Image Section -->
+        {% if result.image_url %}
+        <img src="{{ result.image_url }}" class="card-img-top" alt="{{ result.title }}"
+            style="height: 180px; object-fit: cover;">
+        {% else %}
+        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+            <i class="fas fa-utensils fa-3x text-muted"></i>
+        </div>
+        {% endif %}
+
+        <div class="card-body">
+            <!-- Type Badge -->
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge 
+                    {% if result.vendor_type == 'restaurant' %}bg-danger
+                    {% elif result.vendor_type == 'stall' %}bg-warning text-dark
+                    {% else %}bg-secondary{% endif %}">
+                    {% if result.type == 'menu_item' %}
+                    <i class="fas fa-hamburger me-1"></i> Dish
+                    {% elif result.vendor_type == 'restaurant' %}
+                    <i class="fas fa-building me-1"></i> Restaurant
+                    {% elif result.vendor_type == 'stall' %}
+                    <i class="fas fa-store-alt me-1"></i> Food Stall
+                    {% else %}
+                    <i class="fas fa-utensils me-1"></i> Vendor
+                    {% endif %}
+                </span>
+
+                {% if result.is_featured %}
+                <span class="badge bg-info">
+                    <i class="fas fa-star me-1"></i> Featured
+                </span>
+                {% endif %}
+            </div>
+
+            <!-- Title -->
+            <h5 class="card-title mb-2">{{ result.title }}</h5>
+
+            <!-- Cuisine & Location -->
+            <div class="mb-3">
+                {% if result.cuisine %}
+                <small class="text-muted d-block">
+                    <i class="fas fa-utensils me-1"></i> {{ result.cuisine|truncatechars:40 }}
+                </small>
+                {% endif %}
+
+                {% if result.location %}
+                <small class="text-muted d-block">
+                    <i class="fas fa-map-marker-alt me-1"></i> {{ result.location|truncatechars:40 }}
+                </small>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <p class="card-text text-muted small mb-3">
+                {{ result.description|truncatewords:20 }}
+            </p>
+
+            <!-- Additional Info -->
+            <div class="additional-info">
+                {% if result.type == 'menu_item' and result.price %}
+                <div class="mb-2">
+                    <small><i class="fas fa-tag me-1"></i> {{ result.price }}</small>
+                </div>
+                {% endif %}
+
+                {% if result.rating %}
+                <div class="mb-2">
+                    <small>
+                        <i class="fas fa-star text-warning me-1"></i>
+                        {{ result.rating }} ({{ result.review_count }} reviews)
+                    </small>
+                </div>
+                {% endif %}
+
+                <!-- Dietary Badges -->
+                <div class="d-flex flex-wrap gap-1 mt-2">
+                    {% if result.halal %}
+                    <span class="badge bg-success" style="font-size: 0.7em;">Halal</span>
+                    {% endif %}
+                    {% if result.vegetarian %}
+                    <span class="badge bg-light text-dark" style="font-size: 0.7em;">Vegetarian</span>
+                    {% endif %}
+                    {% if result.vegan %}
+                    <span class="badge bg-success" style="font-size: 0.7em;">Vegan</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer bg-transparent border-top">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-danger small">
+                    View Details <i class="fas fa-arrow-right ms-1"></i>
+                </span>
+                {% if result.is_verified %}
+                <span class="badge bg-primary" style="font-size: 0.7em;">
+                    <i class="fas fa-check-circle"></i> Verified
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</a>
+
+<style>
+    .card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .card-link:hover {
+        color: inherit;
+    }
+
+    .card {
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+    }
+
+    .card:hover {
+        border-color: #dc3545;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+</style>

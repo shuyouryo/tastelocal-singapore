@@ -1,0 +1,36 @@
+<!-- proposal/templates/proposal/detail.html -->
+{% extends 'proposal/base_generic.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Proposal #{{ proposal.id }}</h2>
+    <p><strong>From:</strong> {{ proposal.sender.user.first_name }} {{ proposal.sender.user.last_name }}, {{ proposal.sender.business_name|default:proposal.sender.company_name }}</p>
+    <p><strong>To:</strong> {{ proposal.receiver.user.first_name }} {{ proposal.receiver.user.last_name }}, {{ proposal.receiver.business_name|default:proposal.receiver.company_name }}</p>
+    <p><strong>Status:</strong> {{ proposal.get_status_display }}</p>
+
+    <h5>Sender commitments</h5>
+    <pre>{{ proposal.sender_duties }}</pre>
+
+    <h5>Receiver commitments</h5>
+    {% if proposal.receiver_duties %}
+    <pre>{{ proposal.receiver_duties }}</pre>
+    {% else %}
+    <p class="text-muted fst-italic">(nothing requested yet – counter-propose to add)</p>
+    {% endif %}
+
+    {% if user == proposal.receiver and proposal.status in 'S,C' or user == proposal.sender and proposal.status == 'C' %}
+    <a href="{% url 'proposal:respond' proposal.id %}" class="btn btn-primary">Respond</a>
+    {% endif %}
+
+    <!-- respond button -->
+    {% if user == proposal.receiver and proposal.status in 'S,C' or user == proposal.sender and proposal.status == 'C' %}
+    <a href="{% url 'proposal:respond' proposal.id %}" class="btn btn-primary btn-sm">
+        <i class="fas fa-reply me-1"></i>Respond
+    </a>
+    {% endif %}
+    
+    <!-- Dynamic back link -->
+    <a href="{{ request.GET.next|default:'/vendors/tour-operators/' }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i>Back
+    </a>
+</div>
+{% endblock %}

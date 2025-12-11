@@ -1,0 +1,13 @@
+### 2.4 Protect Sensitive Data (IMPORTANT!)
+```bash
+# Check for sensitive data before committing
+grep -r "SECRET_KEY" . --include="*.py" --include="*.env"
+grep -r "PASSWORD" . --include="*.py" --include="*.env"
+grep -r "API_KEY" . --include="*.py" --include="*.env"
+
+# Move sensitive data to environment variables if not already
+# settings.py should look like:
+# import os
+# from dotenv import load_dotenv
+# load_dotenv()
+# SECRET_KEY = os.getenv('SECRET_KEY')

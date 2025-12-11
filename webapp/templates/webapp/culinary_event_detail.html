@@ -1,0 +1,184 @@
+<!-- webapp/templates/webapp/culinary_event_detail.html -->
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block title %}{{ event.event_name }} - TasteLocal Singapore{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'webapp:homepage' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'webapp:places_eat' %}">Places to Eat</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'webapp:culinary_events' %}">Culinary Events</a></li>
+            <li class="breadcrumb-item active">{{ event.event_name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-md-8">
+            <!-- Event Header -->
+            <div class="mb-4">
+                <h1 class="display-5 fw-bold mb-3">{{ event.event_name }}</h1>
+
+                <!-- Event Type & Status Badges -->
+                <div class="mb-3">
+                    <span class="badge bg-primary me-2">{{ event.get_event_type_display }}</span>
+                    {% if event.is_featured %}<span class="badge bg-warning me-2">Featured</span>{% endif %}
+                    {% if event.is_active %}<span class="badge bg-success">Active</span>
+                    {% else %}<span class="badge bg-secondary">Ended</span>{% endif %}
+                </div>
+
+                <!-- Date Range -->
+                <div class="info-line mb-2">
+                    <strong>Dates:</strong>
+                    {{ event.event_start_date|date:"d/m/Y" }}
+                    {% if event.event_end_date and event.event_end_date != event.event_start_date %}
+                    – {{ event.event_end_date|date:"d/m/Y" }}
+                    {% endif %}
+                </div>
+
+                <!-- Vendor / Cuisine / Location -->
+                <div class="info-line mb-2">
+                    <strong>Vendor:</strong> {{ event.vendor.business_name }}
+                </div>
+                {% if event.event_cuisine.all %}
+                <div class="info-line mb-2">
+                    <strong>Cuisine:</strong>
+                    {% for c in event.event_cuisine.all %}
+                    <span class="badge bg-light text-dark me-1">{{ c.name }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% if event.event_address %}
+                <div class="info-line mb-2">
+                    <strong>Location:</strong> {{ event.event_address }}
+                </div>
+                {% endif %}
+
+                {% if event.event_description %}
+                <p class="lead fs-4 mt-3">{{ event.event_description|linebreaksbr }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Event Image (full-width card) -->
+            {% if event.event_pix %}
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <img src="{{ event.event_pix.url }}" class="sidebar-business-image" alt="{{ event.event_name }}">
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="col-md-4">
+            <!-- Vendor Image (fallback) -->
+            {% if not event.event_pix and event.vendor.business_pix %}
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <img src="{{ event.vendor.business_pix.url }}" class="sidebar-business-image"
+                        alt="{{ event.vendor.business_name }}">
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Map -->
+            {% if event.event_latitude and event.event_longitude %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Location</h5>
+                    <div id="map" style="height: 200px; border-radius: 8px;" data-latitude="{{ event.event_latitude }}"
+                        data-longitude="{{ event.event_longitude }}" data-event-name="{{ event.event_name|escapejs }}"
+                        data-event-address="{{ event.event_address|escapejs }}">
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Contact -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Contact</h5>
+                    {% if event.vendor.phone %}
+                    <p class="card-text mb-1">
+                        <i class="fas fa-phone text-muted me-2"></i>{{ event.vendor.phone }}
+                    </p>
+                    {% endif %}
+                    {% if event.event_website %}
+                    <p class="card-text">
+                        <i class="fas fa-globe text-muted me-2"></i>
+                        <a href="{{ event.event_website }}" target="_blank">Event Website</a>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Booking Info (if external ticketing) -->
+            {% if event.vendor.booking_type == 'event_ticketing' and event.vendor.external_booking_link %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Tickets</h5>
+                    {% for link in event.vendor.booking_links_list %}
+                    <a href="{{ link }}" target="_blank" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-ticket-alt me-1"></i> Get Tickets
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sidebar-business-image {
+        width: 100%;
+        max-height: 250px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .info-line {
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .info-line strong {
+        color: #333;
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if event.event_latitude and event.event_longitude %}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Use data attributes to pass values from Django to JavaScript
+        const mapElement = document.getElementById('map');
+        if (!mapElement) return;
+
+        // Get coordinates from data attributes
+        const latitude = parseFloat(mapElement.dataset.latitude);
+        const longitude = parseFloat(mapElement.dataset.longitude);
+        const eventName = mapElement.dataset.eventName;
+        const eventAddress = mapElement.dataset.eventAddress;
+
+        const map = L.map('map').setView([latitude, longitude], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        L.marker([latitude, longitude])
+            .addTo(map)
+            .bindPopup('<strong>' + eventName + '</strong><br>' + eventAddress);
+    });
+</script>
+{% endif %}
+{% endblock %}

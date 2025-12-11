@@ -1,0 +1,229 @@
+<!-- users/templates/users/profile.html -->
+{% extends "webapp/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">User Profile</h3>
+                    <button class="btn btn-outline-primary btn-sm" id="editProfileBtn">
+                        Edit Profile
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- View Mode -->
+                    <div id="viewMode">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p><strong>First Name:</strong> <span id="viewFirstName">{{ user.first_name }}</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Last Name:</strong> <span id="viewLastName">{{ user.last_name }}</span></p>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <p><strong>Email:</strong> {{ user.email }}</p>
+                            <small class="text-muted">Your email is your unique identifier and cannot be changed.</small>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p><strong>Nationality:</strong> <span id="viewNationality">{{ user.get_nationality_display }}</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Phone Number:</strong> <span id="viewPhone">{{ user.phone_number|default:"Not provided" }}</span></p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p><strong>Date of Birth:</strong>
+                                    <span id="viewDob">
+                                        {% if user.date_of_birth %}
+                                        {{ user.date_of_birth|date:"d/m/Y" }}
+                                        {% else %}
+                                        Not provided
+                                        {% endif %}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>User Type:</strong> {{ user.get_user_type_display }}</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="bioSection" {% if not user.bio %}style="display: none;" {% endif %}>
+                            <p><strong>About Me:</strong></p>
+                            <div id="viewBio" class="border rounded p-3 bg-light">
+                                {{ user.bio|linebreaksbr }}
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <a href="{% url 'users:my_itinerary' %}" class="btn btn-primary">My Itinerary</a>
+                            <a href="{% url 'users:my_reviews' %}" class="btn btn-primary">My Reviews</a>
+                        </div>
+                    </div>
+
+                    <!-- Edit Mode -->
+                    <div id="editMode" style="display: none;">
+                        <form id="profileForm" method="POST" action="{% url 'users:update_profile' %}">
+                            {% csrf_token %}
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" name="first_name"
+                                        value="{{ user.first_name }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" name="last_name"
+                                        value="{{ user.last_name }}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" value="{{ user.email }}" disabled>
+                                <div class="form-text">Your email is your unique identifier and cannot be changed.</div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="nationality" class="form-label">Nationality</label>
+                                    <select class="form-select" id="nationality" name="nationality">
+                                        <option value="">Select your nationality</option>
+                                        {% for value, label in user.NATIONALITY_CHOICES %}
+                                        <option value="{{ value }}" {% if user.nationality == value %}selected{% endif %}>
+                                            {{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone_number"
+                                        value="{{ user.phone_number|default:'' }}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="dob" class="form-label">Date of Birth</label>
+                                <input type="date" class="form-control" id="dob" name="date_of_birth"
+                                    value="{{ user.date_of_birth|date:'Y-m-d' }}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">About Me</label>
+                                <textarea class="form-control" id="bio" name="bio" rows="4"
+                                    placeholder="Tell us a bit about yourself...">{{ user.bio|default:'' }}</textarea>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                <button type="button" class="btn btn-outline-secondary"
+                                    id="cancelEditBtn">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const editProfileBtn = document.getElementById('editProfileBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const viewMode = document.getElementById('viewMode');
+        const editMode = document.getElementById('editMode');
+
+        function toggleEditMode() {
+            if (viewMode.style.display === 'none') {
+                viewMode.style.display = 'block';
+                editMode.style.display = 'none';
+            } else {
+                viewMode.style.display = 'none';
+                editMode.style.display = 'block';
+            }
+        }
+
+        if (editProfileBtn) editProfileBtn.addEventListener('click', toggleEditMode);
+        if (cancelEditBtn) cancelEditBtn.addEventListener('click', toggleEditMode);
+
+        // AJAX form submission
+        const profileForm = document.getElementById('profileForm');
+        if (profileForm) {
+            profileForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update view mode with new values
+                            document.getElementById('viewFirstName').textContent = data.user.first_name;
+                            document.getElementById('viewLastName').textContent = data.user.last_name;
+                            document.getElementById('viewNationality').textContent = data.user.nationality_display;
+                            document.getElementById('viewPhone').textContent = data.user.phone_number || 'Not provided';
+
+                            // Handle date of birth in SG format
+                            const dobElement = document.getElementById('viewDob');
+                            if (data.user.date_of_birth_display) {
+                                dobElement.textContent = data.user.date_of_birth_display;  // Will be in DD/MM/YYYY format
+                            } else {
+                                dobElement.textContent = 'Not provided';
+                            }
+
+                            // Update bio section
+                            const bioSection = document.getElementById('bioSection');
+                            const viewBio = document.getElementById('viewBio');
+                            if (data.user.bio) {
+                                viewBio.innerHTML = data.user.bio.replace(/\n/g, '<br>');
+                                bioSection.style.display = 'block';
+                            } else {
+                                bioSection.style.display = 'none';
+                            }
+
+                            toggleEditMode();
+                            showAlert('Profile updated successfully!', 'success');
+                        } else {
+                            showAlert('Error updating profile. Please try again.', 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showAlert('An error occurred. Please try again.', 'danger');
+                    });
+            });
+        }
+
+        function showAlert(message, type) {
+            const existingAlerts = document.querySelectorAll('.alert');
+            existingAlerts.forEach(alert => alert.remove());
+
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+
+            const cardBody = document.querySelector('.card-body');
+            if (cardBody) cardBody.insertBefore(alertDiv, cardBody.firstChild);
+        }
+    });
+</script>
+{% endblock %}

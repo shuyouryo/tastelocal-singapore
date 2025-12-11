@@ -1,0 +1,183 @@
+<!-- webapp/templates/webapp/eat_drink.html -->
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center" id="heroSection">
+    <div class="container">
+        <h1 class="display-4 mb-4">Places to Eat in Singapore</h1>
+        <p class="lead mb-4">Discover amazing places to dine across Singapore</p>
+    </div>
+</section>
+
+<div class="container mt-4">
+    <h1>A Culinary Adventure Awaits</h1>
+    <p class="lead">From Michelin-starred dining to sizzling street food, taste the soul of Singapore</p>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3>🍽️</h3>
+                    <h5>Restaurants & Coffee Shops</h5>
+                    <p>Places with their own dedicated seating where you can sit back and relax. Whether it's a quick bite of fast food or a fine dining experience, these establishments provide their own tables and chairs for you to enjoy your meal on-site.</p>
+                    <a href="{% url 'webapp:restaurants' %}" class="btn btn-outline-danger">Explore</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3>🥡</h3>
+                    <h5>Food Stalls</h5>
+                    <p>Singapore's legendary food stalls often operate in shared spaces like hawker centers and food courts. While they don't own their seating, they work within communal dining areas where seating is shared among multiple vendors, creating vibrant social hubs.</p>
+                    <p class="small text-muted">A UNESCO Intangible Cultural Heritage found in hawker centers, food courts, and coffee shops islandwide.</p>
+                    <!-- UPDATED: Changed URL to point to /places-eat/food-stalls/ -->
+                    <a href="{% url 'webapp:food_stalls' %}" class="btn btn-outline-danger">Explore</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3>🎪</h3>
+                    <h5>Culinary Events</h5>
+                    <p>Ephemeral food experiences that come and go. These are one-off or recurring events like night markets, food festivals, carnivals, and seasonal celebrations where you can discover new flavors. But be quick, they won't be around forever.</p>
+                    <a href="{% url 'webapp:culinary_events' %}" class="btn btn-outline-danger">Explore</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section Styles - REDUCED HEIGHT BY ONE THIRD */
+    .hero-section {
+        position: relative;
+        color: white;
+        padding: 100px 0;
+        text-align: center;
+        overflow: hidden;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        /* ADD FALLBACK BACKGROUND */
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+        url('{% static "images/banner/loc_bg_1.png" %}') center/cover;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3));
+        z-index: 1;
+    }
+
+    .hero-section .container {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        transition: opacity 1.5s ease-in-out;
+        opacity: 0;
+    }
+
+    .hero-bg.active {
+        opacity: 1;
+    }
+
+    /* Fallback background if JavaScript fails */
+    .no-js .hero-section {
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+        url('{% static "images/banner/loc_bg_1.png" %}') center/cover;
+    }
+
+    /* REMOVED: All hover effects from cards */
+    .card {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: none;
+        /* Remove transitions */
+    }
+
+    .card:hover {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        /* Keep same shadow on hover */
+        transform: none;
+        /* Remove transform effects */
+        border-color: #e9ecef;
+        /* Keep same border color */
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // ===== SIMPLE HERO BANNER ROTATION =====
+        const heroSection = document.getElementById('heroSection');
+
+        // Define your 5 food images - USING CORRECT PATHS
+        const imageUrls = [
+            "{% static 'images/banner/loc_bg_1.png' %}",
+            "{% static 'images/banner/loc_bg_2.png' %}",
+            "{% static 'images/banner/loc_bg_3.png' %}",
+            "{% static 'images/banner/loc_bg_4.png' %}",
+            "{% static 'images/banner/loc_bg_5.png' %}"
+        ];
+
+        console.log("Banner images to load:", imageUrls); // DEBUG
+
+        // Remove no-js class if JavaScript is running
+        document.documentElement.classList.remove('no-js');
+
+        // Preload images to ensure they're available
+        function preloadImages(urls) {
+            urls.forEach(url => {
+                const img = new Image();
+                img.src = url;
+            });
+        }
+
+        // Preload all images
+        preloadImages(imageUrls);
+
+        // Create all background elements
+        const backgrounds = imageUrls.map((url, index) => {
+            const bgDiv = document.createElement('div');
+            bgDiv.className = `hero-bg ${index === 0 ? 'active' : ''}`;
+            bgDiv.style.backgroundImage = `url(${url})`;
+            heroSection.appendChild(bgDiv);
+            return bgDiv;
+        });
+
+        console.log("Created", backgrounds.length, "background elements"); // DEBUG
+
+        // Simple rotation every 5 seconds (reduced for testing)
+        let currentIndex = 0;
+        setInterval(() => {
+            backgrounds[currentIndex].classList.remove('active');
+            currentIndex = (currentIndex + 1) % backgrounds.length;
+            backgrounds[currentIndex].classList.add('active');
+            console.log("Switched to background:", currentIndex); // DEBUG
+        }, 5000); // Reduced to 5 seconds for testing
+    });
+</script>
+{% endblock %}

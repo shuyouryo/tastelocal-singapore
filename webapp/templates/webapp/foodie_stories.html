@@ -1,0 +1,265 @@
+<!-- webapp/templates/webapp/foodie_stories.html -->
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'webapp:homepage' %}">Home</a></li>
+            <li class="breadcrumb-item active">Foodie Stories</li>
+        </ol>
+    </nav>
+
+    <h1>Foodie Stories</h1>
+    <p class="lead">Discover Singapore's food culture through stories</p>
+
+    <div class="row mt-4">
+        <!-- Filters Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">FILTERS</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Keyword Filters -->
+                    <div class="mb-4">
+                        <h6 class="filter-section-title">TOPICS</h6>
+                        {% for keyword in available_keywords %}
+                        <div class="filter-option">
+                            <input type="checkbox" id="keyword-{{ keyword.id }}" name="keyword" value="{{ keyword.id }}"
+                                {% if keyword.id in selected_keywords %}checked{% endif %}>
+                            <label for="keyword-{{ keyword.id }}">{{ keyword.name }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Author Filters -->
+                    <div class="mb-4">
+                        <h6 class="filter-section-title">AUTHORS</h6>
+                        {% for author in available_authors %}
+                        <div class="filter-option">
+                            <input type="checkbox" id="author-{{ author|slugify }}" name="author" value="{{ author }}"
+                                {% if author in selected_authors %}checked{% endif %}>
+                            <label for="author-{{ author|slugify }}">{{ author }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Year Filters -->
+                    <div class="mb-4">
+                        <h6 class="filter-section-title">PUBLISHED YEAR</h6>
+                        {% for year in available_years %}
+                        <div class="filter-option">
+                            <input type="checkbox" id="year-{{ year }}" name="year" value="{{ year }}" {% if year in selected_years %}checked{% endif %}>
+                            <label for="year-{{ year }}">{{ year }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Clear Filters Button -->
+                    {% if selected_keywords or selected_authors or selected_years %}
+                    <button class="btn btn-outline-secondary w-100 mt-3" onclick="clearFilters()">Clear Filters</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Articles Listing -->
+        <div class="col-md-9">
+            {% if articles %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="text-muted mb-0">Found {{ articles|length }} article{{ articles|length|pluralize }}</p>
+                {% if selected_keywords or selected_authors or selected_years %}
+                <small class="text-muted">Filters applied</small>
+                {% endif %}
+            </div>
+
+            {% for article in articles %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4 class="card-title mb-2">{{ article.title }}</h4>
+
+                            <div class="article-meta mb-3">
+                                <div class="info-line">
+                                    <strong>Author:</strong> {{ article.author_name }}
+                                </div>
+                                <div class="info-line">
+                                    <strong>Published:</strong> {{ article.date_written|date:"F j, Y" }}
+                                </div>
+                                <!-- Removed keyword display from here -->
+                            </div>
+
+                            {% if article.content %}
+                            <p class="card-text text-muted mb-3">{{ article.content|truncatewords:50 }}</p>
+                            {% endif %}
+
+                            <!-- Keyword badges below article text -->
+                            {% if article.keywords.exists %}
+                            <div class="keyword-badges mb-3">
+                                {% for keyword in article.keywords.all %}
+                                <span class="badge bg-light text-dark me-1 mb-1">{{ keyword.name }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <div class="article-image-section">
+                                {% if article.images.first %}
+                                <div class="article-image-container mb-3">
+                                    <img src="{{ article.images.first.image.url }}" class="article-image"
+                                        alt="{{ article.images.first.alt_text|default:article.title }}"
+                                        style="width: 100%; height: 180px; object-fit: cover;">
+                                    {% if article.images.first.caption %}
+                                    <small class="text-muted d-block mt-2">{{ article.images.first.caption }}</small>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <div class="article-image-container text-muted bg-light d-flex align-items-center justify-content-center mb-3" style="width: 100%; height: 180px; border-radius: 8px;">
+                                    <div class="text-center">
+                                        <i class="fas fa-image fa-2x mb-2"></i>
+                                        <br>
+                                        <small>No Image</small>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Details Button below the picture -->
+                                <div class="text-center">
+                                    <a href="{% url 'webapp:article_detail' article.slug %}"
+                                        class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-info-circle me-1"></i>Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="alert alert-info">
+                {% if selected_keywords or selected_authors or selected_years %}
+                No articles found matching your filters.
+                <a href="{% url 'webapp:foodie_stories' %}" class="alert-link">Clear filters</a> to see all articles.
+                {% else %}
+                <h4>Content Coming Soon!</h4>
+                <p class="mt-2 mb-0">Our food writers are preparing amazing stories about Singapore's culinary scene. Stay tuned!</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-section-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .filter-option {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        padding: 0.25rem 0;
+    }
+
+    .filter-option input[type="checkbox"] {
+        margin-right: 0.75rem;
+        width: 16px;
+        height: 16px;
+    }
+
+    .filter-option label {
+        margin-bottom: 0;
+        font-size: 0.9rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+    }
+
+    .article-meta {
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .info-line {
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .info-line strong {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .article-image-container {
+        text-align: center;
+    }
+
+    .article-image {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .keyword-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* No hover effects */
+    .card:hover {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function applyFilters() {
+        // Get selected filters
+        const selectedKeywords = Array.from(document.querySelectorAll('input[name="keyword"]:checked')).map(cb => cb.value);
+        const selectedAuthors = Array.from(document.querySelectorAll('input[name="author"]:checked')).map(cb => cb.value);
+        const selectedYears = Array.from(document.querySelectorAll('input[name="year"]:checked')).map(cb => cb.value);
+
+        // Build URL with filter parameters
+        const params = new URLSearchParams();
+        selectedKeywords.forEach(keyword => params.append('keyword', keyword));
+        selectedAuthors.forEach(author => params.append('author', author));
+        selectedYears.forEach(year => params.append('year', year));
+
+        window.location.href = '{% url "webapp:foodie_stories" %}?' + params.toString();
+    }
+
+    function clearFilters() {
+        window.location.href = '{% url "webapp:foodie_stories" %}';
+    }
+
+    // Auto-apply filters when checkboxes change
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+        filterCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                // Add a small delay to show the checkbox state change
+                setTimeout(applyFilters, 100);
+            });
+        });
+    });
+</script>
+{% endblock %}

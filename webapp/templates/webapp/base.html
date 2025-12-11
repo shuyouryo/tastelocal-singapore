@@ -1,0 +1,827 @@
+<!-- webapp/templates/webapp/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TasteLocal Singapore - Authentic Local Food Experiences{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .navbar-brand {
+            font-weight: bold;
+            color: #e74c3c !important;
+            font-size: 1.5rem;
+        }
+
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), #f8f9fa;
+            background-size: cover;
+            color: #333;
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .card {
+            border: 1px solid #dee2e6;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .navbar-nav .nav-link {
+            color: #333 !important;
+        }
+
+        /* Modal Styles */
+        .modal-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .btn-primary {
+            background-color: #e74c3c;
+            border-color: #e74c3c;
+        }
+
+        .alert {
+            border-radius: 8px;
+        }
+
+        .form-check-input:checked {
+            background-color: #e74c3c;
+            border-color: #e74c3c;
+        }
+
+        .form-check-label {
+            line-height: 1.4;
+        }
+
+        .form-check {
+            padding-left: 0;
+        }
+
+        .form-check-input {
+            margin-top: 0.3em;
+        }
+
+        .form-footer {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .agreement {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-name-link {
+            color: #0d6efd; /* Bootstrap primary blue */
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            transition: color 0.2s ease;
+            cursor: pointer;
+        }
+    </style>
+
+    <!-- ADD THIS BLOCK FOR EXTRA CSS -->
+    {% block extra_css %}
+    {% endblock %}
+</head>
+
+<body>
+    <!-- Navigation Header -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'webapp:homepage' %}">🍜 TasteLocal Singapore</a>
+
+            <!-- Mobile toggle button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navigation items -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'webapp:places_eat' %}">Places to Eat</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'webapp:tours_experiences' %}">Tours & Experiences</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'webapp:foodie_stories' %}">Foodie Stories</a>
+                    </li>
+                </ul>
+
+                <!-- Authentication Links - UPDATED -->
+                <div class="navbar-nav">
+                    {% if user.is_authenticated %}
+                    <!-- At this point, user should NEVER be staff/admin  because we blocked them in login view -->
+                        {% if user.is_staff or user.is_superuser %}
+                        <!-- This should never happen, but just in case -->
+                            <div class="alert alert-danger small m-2">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Admin account detected. Please use <a href="/admin/">admin interface</a>.
+                            </div>
+                        {% else %}
+                        <!-- Regular user links -->
+                            <!-- Regular user links - Show proper name -->
+                            <a class="nav-link" href="{% url 'users:profile' %}">
+                                Welcome,
+                                <span class="user-name-link">
+                                    {% if user.first_name or user.last_name %}
+                                        {{ user.first_name }} {{ user.last_name }}
+                                    {% else %}
+                                        {{ user.email|truncatechars:20 }}
+                                    {% endif %}
+                                </span>
+                            </a>
+                            <a class="nav-link" href="{% url 'users:logout' %}">Logout</a>
+                        {% endif %}
+                    {% else %}
+                    <!-- Login/Signup links -->
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Sign In</a>
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Sign Up</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        <!-- Page-specific content goes here -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light pt-5 pb-3">
+        <div class="container">
+            <div class="row">
+                <!-- Company Info -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h5 class="mb-3" style="color: #e74c3c !important;">🍜 TasteLocal Singapore</h5>
+                    <p class="mb-3">Discover authentic local food experiences in Singapore.</p>
+                    <div class="social-links">
+                        <a href="#" class="text-light me-3"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="text-light"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+    
+                <!-- Company Pages -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h6 class="fw-bold text-white mb-3">Company</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'webapp:about_us' %}" class="text-light text-decoration-none">About
+                                Us</a></li>
+                        <li class="mb-2"><a href="{% url 'webapp:our_mission' %}"
+                                class="text-light text-decoration-none">Our Mission</a></li>
+                        <li class="mb-2"><a href="{% url 'webapp:business_partners' %}"
+                                class="text-light text-decoration-none">Business Partners</a></li>
+                        <li class="mb-2"><a href="{% url 'webapp:contact' %}"
+                                class="text-light text-decoration-none">Contact Us</a></li>
+                    </ul>
+                </div>
+    
+                <!-- Legal -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h6 class="fw-bold text-white mb-3">Legal</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'webapp:privacy_policy' %}"
+                                class="text-light text-decoration-none">Privacy Policy</a></li>
+                        <li class="mb-2"><a href="{% url 'webapp:terms_service' %}"
+                                class="text-light text-decoration-none">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+    
+            <!-- Copyright -->
+            <div class="row pt-3 border-top border-secondary">
+                <div class="col-12 text-center">
+                    <p class="small mb-0">&copy; 2024 TasteLocal Singapore. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Authentication Modals -->
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sign In</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info small mb-3">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note for administrators:</strong> Please use the
+                        <a href="/admin/" target="_blank">Django admin login</a>
+                        for administrative access.
+                    </div>
+
+                    <form id="loginForm" method="POST" data-url="{% url 'users:login' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="loginEmail" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="loginPassword" name="password" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">Sign In</button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <a href="#" class="text-decoration-none" data-bs-toggle="modal"
+                            data-bs-target="#passwordResetModal">
+                            Forgot your password?
+                        </a>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <p>Don't have an account?
+                            <a href="#" class="text-decoration-none" data-bs-toggle="modal"
+                                data-bs-target="#registerModal">
+                                Sign up here
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="registerForm" method="POST" data-url="{% url 'users:register' %}">
+                        {% csrf_token %}
+                        <!-- require First Name / Last Name so that email is not exposed -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="registerFirstName" class="form-label">First Name *</label>
+                                <input type="text" class="form-control" id="registerFirstName" name="first_name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="registerLastName" class="form-label">Last Name *</label>
+                                <input type="text" class="form-control" id="registerLastName" name="last_name" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="registerEmail" class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="registerEmail" name="email" required>
+                            <div class="form-text">We'll never share your email with anyone else.</div>
+                        </div>
+
+                        <!-- User Type Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Select which describes you best: *</label>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="radio" name="user_type"
+                                            id="userTypeTourist" value="tourist" required>
+                                        <label class="form-check-label" for="userTypeTourist">
+                                            <span class="fw-semibold">I am a visitor to Singapore</span> and am keen to
+                                            explore the local culinary culture.
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="radio" name="user_type" id="userTypeLocal"
+                                            value="local" required>
+                                        <label class="form-check-label" for="userTypeLocal">
+                                            <span class="fw-semibold">I live / work / study in Singapore</span> and want
+                                            to
+                                            know more about the local culinary culture.
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="radio" name="user_type"
+                                            id="userTypeVendor" value="vendor" required>
+                                        <label class="form-check-label" for="userTypeVendor">
+                                            <span class="fw-semibold">I am a F&B vendor</span> and am looking to partner
+                                            with TasteLocal and other local businesses.
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="user_type"
+                                            id="userTypeTourOperator" value="tour_operator" required>
+                                        <label class="form-check-label" for="userTypeTourOperator">
+                                            <span class="fw-semibold">I am a tour guide or operator</span> and am
+                                            looking to
+                                            partner with TasteLocal and other local businesses.
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="registerNationality" class="form-label">Nationality *</label>
+                                <select class="form-select" id="registerNationality" name="nationality" required>
+                                    <option value="">Select your nationality</option>
+                                    <option value="singaporean">Singaporean</option>
+                                    <option value="malaysian">Malaysian</option>
+                                    <option value="indonesian">Indonesian</option>
+                                    <option value="chinese">Chinese</option>
+                                    <option value="indian">Indian</option>
+                                    <option value="filipino">Filipino</option>
+                                    <option value="thai">Thai</option>
+                                    <option value="vietnamese">Vietnamese</option>
+                                    <option value="british">British</option>
+                                    <option value="american">American</option>
+                                    <option value="australian">Australian</option>
+                                    <option value="canadian">Canadian</option>
+                                    <option value="japanese">Japanese</option>
+                                    <option value="korean">Korean</option>
+                                    <option value="german">German</option>
+                                    <option value="french">French</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="registerPhone" class="form-label">Business Phone Number (Optional)</label>
+                                <input type="tel" class="form-control" id="registerPhone" name="phone_number"
+                                    placeholder="+65 1234 5678">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="registerPassword" class="form-label">Password *</label>
+                            <input type="password" class="form-control" id="registerPassword" name="password1" required>
+                            <div class="form-text">Minimum 8 characters with letters and numbers.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="registerPasswordConfirm" class="form-label">Confirm Password *</label>
+                            <input type="password" class="form-control" id="registerPasswordConfirm" name="password2"
+                                required>
+                        </div>
+                        <div class="form-footer">
+                            <div class="agreement">
+                                <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a
+                                        href="#" class="text-decoration-none">Privacy Policy</a> *
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 btn-lg">Create Account</button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <p class="text-muted">Already have an account?
+                            <a href="#" class="text-decoration-none" data-bs-toggle="modal"
+                                data-bs-target="#loginModal">
+                                Sign in here
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Reset Request Modal -->
+    <div class="modal fade" id="passwordResetModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reset Your Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Enter your email address below, and we'll send you instructions to reset your password.</p>
+
+                    <form id="passwordResetForm" method="POST" data-url="{% url 'users:password_reset' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="resetEmail" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="resetEmail" name="email" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Send Reset Instructions</button>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            Back to Sign In
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Reset Sent Modal -->
+    <div class="modal fade" id="passwordResetSentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Check Your Email</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
+                        <h6>Password Reset Email Sent</h6>
+                    </div>
+
+                    <p class="small">We've sent you instructions for setting your password to the email address you
+                        provided.</p>
+                    <p class="small">You should receive them shortly.</p>
+
+                    <button type="button" class="btn btn-primary mt-3" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- ADD THIS BLOCK FOR EXTRA SCRIPTS -->
+    {% block extra_scripts %}
+    {% endblock %}
+    
+    <!-- Authentication JavaScript - SIMPLE VERSION -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize all modals properly
+            const loginModalElement = document.getElementById('loginModal');
+            const registerModalElement = document.getElementById('registerModal');
+            const passwordResetModalElement = document.getElementById('passwordResetModal');
+            const passwordResetSentModalElement = document.getElementById('passwordResetSentModal');
+
+            // Store modal instances
+            let loginModal = null;
+            let registerModal = null;
+            let passwordResetModal = null;
+            let passwordResetSentModal = null;
+
+            // Initialize modals if they exist
+            if (loginModalElement) {
+                loginModal = new bootstrap.Modal(loginModalElement);
+            }
+            if (registerModalElement) {
+                registerModal = new bootstrap.Modal(registerModalElement);
+            }
+            if (passwordResetModalElement) {
+                passwordResetModal = new bootstrap.Modal(passwordResetModalElement);
+            }
+            if (passwordResetSentModalElement) {
+                passwordResetSentModal = new bootstrap.Modal(passwordResetSentModalElement);
+            }
+
+            // Simple CSRF token function
+            function getCSRFToken() {
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                return csrfToken ? csrfToken.value : '';
+            }
+
+            // Password Reset Form Handler - FIXED
+            const passwordResetForm = document.getElementById('passwordResetForm');
+            if (passwordResetForm) {
+                passwordResetForm.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+
+                    const url = this.getAttribute('data-url');
+                    const email = document.getElementById('resetEmail').value;
+
+                    // Basic validation
+                    if (!email) {
+                        showPasswordResetAlert('Please enter your email address', 'danger');
+                        return;
+                    }
+
+                    // Email format validation
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(email)) {
+                        showPasswordResetAlert('Please enter a valid email address', 'danger');
+                        return;
+                    }
+
+                    // Show loading
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Sending...';
+                    submitBtn.disabled = true;
+
+                    try {
+                        // Create form data
+                        const formData = new FormData();
+                        formData.append('email', email);
+                        formData.append('csrfmiddlewaretoken', getCSRFToken());
+
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // SUCCESS: Show success message
+                            showPasswordResetAlert(data.message, 'success');
+
+                            // Clear form
+                            this.reset();
+
+                            // Close current modal and show success modal after delay
+                            setTimeout(() => {
+                                if (passwordResetModal) {
+                                    passwordResetModal.hide();
+                                }
+
+                                // Show success modal
+                                setTimeout(() => {
+                                    if (passwordResetSentModal) {
+                                        passwordResetSentModal.show();
+                                    }
+                                }, 300);
+                            }, 2000); // Wait 2 seconds to show success message
+
+                        } else {
+                            // ERROR: Show error message
+                            if (data.errors && data.errors.email) {
+                                showPasswordResetAlert(data.errors.email[0], 'danger');
+                            } else if (data.errors) {
+                                // Handle other field errors
+                                const errorMessages = [];
+                                for (const field in data.errors) {
+                                    errorMessages.push(...data.errors[field]);
+                                }
+                                showPasswordResetAlert(errorMessages.join(', '), 'danger');
+                            } else {
+                                showPasswordResetAlert('An error occurred. Please try again.', 'danger');
+                            }
+                        }
+
+                    } catch (error) {
+                        console.error('Error:', error);
+                        showPasswordResetAlert('Network error. Please check your connection and try again.', 'danger');
+                    } finally {
+                        // Reset button
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                });
+            }
+
+            // Helper function to show alerts in password reset modal
+            function showPasswordResetAlert(message, type) {
+                // Get the modal body
+                const modalBody = document.querySelector('#passwordResetModal .modal-body');
+                if (!modalBody) return;
+
+                // Remove any existing alerts
+                const existingAlerts = modalBody.querySelectorAll('.alert');
+                existingAlerts.forEach(alert => {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                });
+
+                // Create new alert
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show mb-3`;
+                alertDiv.innerHTML = ` <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>
+                ${message} <button type="button" class="btn-close" data-bs-dismiss="alert"></button> `;
+
+                // Insert at the beginning of modal body
+                modalBody.insertBefore(alertDiv, modalBody.firstChild);
+
+                // Auto-remove success alerts after 5 seconds
+                if (type === 'success') {
+                    setTimeout(() => {
+                        if (alertDiv.parentNode) {
+                            alertDiv.parentNode.removeChild(alertDiv);
+                        }
+                    }, 5000);
+                }
+            }
+
+
+            // Login Form Handler
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const url = this.getAttribute('data-url');
+
+                    // Show loading state
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Signing In...';
+                    submitBtn.disabled = true;
+
+                    fetch(url, {
+                        method: 'POST',
+                        body: new FormData(this),
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': getCSRFToken()
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Close modal on success
+                                if (loginModal) {
+                                    loginModal.hide();
+                                }
+                                // Redirect after a brief delay
+                                setTimeout(() => {
+                                    window.location.href = data.redirect_url || '/';
+                                }, 300);
+                            } else {
+                                alert(data.error || 'Login failed. Please check your credentials.');
+                                // Reset button
+                                submitBtn.textContent = originalText;
+                                submitBtn.disabled = false;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred. Please try again.');
+                            // Reset button
+                            submitBtn.textContent = originalText;
+                            submitBtn.disabled = false;
+                        });
+                });
+            }
+
+            // Register Form Handler
+            const registerForm = document.getElementById('registerForm');
+            if (registerForm) {
+                registerForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const url = this.getAttribute('data-url');
+
+                    // Show loading state
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Creating Account...';
+                    submitBtn.disabled = true;
+
+                    fetch(url, {
+                        method: 'POST',
+                        body: new FormData(this),
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': getCSRFToken()
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Close modal on success
+                                if (registerModal) {
+                                    registerModal.hide();
+                                }
+                                // Redirect after a brief delay
+                                setTimeout(() => {
+                                    window.location.href = data.redirect || '/';
+                                }, 300);
+                            } else {
+                                let errorMsg = 'Registration failed. ';
+                                if (data.errors) {
+                                    // Show specific error messages
+                                    Object.values(data.errors).forEach(errors => {
+                                        if (Array.isArray(errors)) {
+                                            errorMsg += errors.join(' ') + ' ';
+                                        }
+                                    });
+                                }
+                                alert(errorMsg.trim());
+                                // Reset button
+                                submitBtn.textContent = originalText;
+                                submitBtn.disabled = false;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred. Please try again.');
+                            // Reset button
+                            submitBtn.textContent = originalText;
+                            submitBtn.disabled = false;
+                        });
+                });
+            }
+
+            // Handle "Back to Sign In" link between modals
+            const backToLoginLinks = document.querySelectorAll('[data-bs-target="#loginModal"]');
+            backToLoginLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    // Hide current modal
+                    const currentModalId = this.closest('.modal').id;
+                    let currentModal = null;
+
+                    switch (currentModalId) {
+                        case 'passwordResetModal':
+                            currentModal = passwordResetModal;
+                            break;
+                        case 'registerModal':
+                            currentModal = registerModal;
+                            break;
+                    }
+
+                    if (currentModal) {
+                        currentModal.hide();
+                    }
+
+                    // Show login modal after current modal is hidden
+                    setTimeout(() => {
+                        if (loginModal) {
+                            loginModal.show();
+                        }
+                    }, 300);
+                });
+            });
+
+            // Handle modal links (e.g., "Sign up here" in login modal)
+            document.querySelectorAll('[data-bs-toggle="modal"]').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetModalId = this.getAttribute('data-bs-target');
+                    let currentModal = null;
+
+                    // Get current modal (if any)
+                    const activeModal = document.querySelector('.modal.show');
+                    if (activeModal) {
+                        switch (activeModal.id) {
+                            case 'loginModal':
+                                currentModal = loginModal;
+                                break;
+                            case 'registerModal':
+                                currentModal = registerModal;
+                                break;
+                            case 'passwordResetModal':
+                                currentModal = passwordResetModal;
+                                break;
+                        }
+                    }
+
+                    // Hide current modal
+                    if (currentModal) {
+                        currentModal.hide();
+                    }
+
+                    // Show target modal
+                    setTimeout(() => {
+                        switch (targetModalId) {
+                            case '#loginModal':
+                                if (loginModal) loginModal.show();
+                                break;
+                            case '#registerModal':
+                                if (registerModal) registerModal.show();
+                                break;
+                            case '#passwordResetModal':
+                                if (passwordResetModal) passwordResetModal.show();
+                                break;
+                        }
+                    }, 300);
+                });
+            });
+
+            // Fix for Escape key - ensure modals respond to keyboard
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    // Get all visible modals
+                    const visibleModals = document.querySelectorAll('.modal.show');
+                    visibleModals.forEach(modal => {
+                        const modalInstance = bootstrap.Modal.getInstance(modal);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+    
+</html>

@@ -1,0 +1,385 @@
+<!-- tours/templates/tours/vendor_list.html -->
+{% extends 'tours/base.html' %}
+{% load static %}
+
+{% block title %}Find Vendor Partners - TasteLocal Singapore Tour Operator{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'tours:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Vendor Partners</li>
+        </ol>
+    </nav>
+
+    <h1>Find Vendor Partners</h1>
+    <p class="lead">Browse all F&B vendors and filter for partnership opportunities</p>
+
+    <div class="row mt-4">
+        <!-- Filters Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">FILTERS</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Partnership Filter -->
+                    <div class="mb-4">
+                        <h6 class="filter-section-title">PARTNERSHIP</h6>
+                        <div class="filter-option">
+                            <input type="checkbox" id="partnership_only" name="partnership_only" {% if partnership_only %}checked{% endif %}>
+                            <label for="partnership_only">Open to Partnership</label>
+                        </div>
+                    </div>
+
+                    <!-- Vendor Type Filters -->
+                    <div class="mb-4">
+                        <h6 class="filter-section-title">VENDOR TYPE</h6>
+                        {% for type_code, type_name in vendor_types %}
+                        <div class="filter-option">
+                            <input type="checkbox" id="type-{{ type_code }}" name="vendor_type" value="{{ type_code }}"
+                                {% if type_code in selected_vendor_types %}checked{% endif %}>
+                            <label for="type-{{ type_code }}">{{ type_name }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Cuisine Filters -->
+                    <div class="mb-4">
+                        <h6 class="filter-section-title">CUISINE</h6>
+                        {% for cuisine in cuisine_types %}
+                        <div class="filter-option">
+                            <input type="checkbox" id="cuisine-{{ cuisine.id }}" name="cuisine_type"
+                                value="{{ cuisine.id }}" {% if cuisine.id|stringformat:"i" in selected_cuisine_types %}checked{% endif %}>
+                            <label for="cuisine-{{ cuisine.id }}">{{ cuisine.name }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Dietary Filters -->
+                    <div class="mb-4">
+                        <h6 class="filter-section-title">DIETARY</h6>
+                        <div class="filter-option">
+                            <input type="checkbox" id="halal" name="halal" {% if halal_filter %}checked{% endif %}>
+                            <label for="halal">Halal Certified</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="vegetarian" name="vegetarian" {% if vegetarian_filter %}checked{% endif %}>
+                            <label for="vegetarian">Vegetarian</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="catering" name="catering" {% if catering_filter %}checked{% endif %}>
+                            <label for="catering">Offers Catering</label>
+                        </div>
+                    </div>
+
+                    <!-- Clear Filters Button -->
+                    {% if selected_vendor_types or selected_cuisine_types or partnership_only or halal_filter or vegetarian_filter or catering_filter %}
+                    <button class="btn btn-outline-secondary w-100 mt-3" onclick="clearFilters()">Clear Filters</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Vendors Listing -->
+        <div class="col-md-9">
+            <!-- Search Bar -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-2">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0">
+                                    <i class="fas fa-search text-muted"></i>
+                                </span>
+                                <input type="text" name="q" class="form-control border-0"
+                                    placeholder="Search vendors by name, description, or cuisine..."
+                                    value="{{ query|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-2"></i>Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Stats and Results Count -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="text-muted mb-0">Found {{ vendors|length }} vendor{{ vendors|length|pluralize }}</p>
+                {% if selected_vendor_types or selected_cuisine_types or partnership_only or halal_filter or vegetarian_filter or catering_filter %}
+                <small class="text-muted">Filters applied</small>
+                {% endif %}
+            </div>
+
+            {% if vendors %}
+            {% for vendor in vendors %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-grow-1">
+                                    <h4 class="card-title mb-2">{{ vendor.business_name }}</h4>
+
+                                    <!-- Business picture right after the name -->
+                                    {% if vendor.business_pix %}
+                                    <div class="business-image-container mb-3">
+                                        <img src="{{ vendor.business_pix.url }}" class="business-image"
+                                            alt="{{ vendor.business_name }}"
+                                            style="width: 300px; height: 200px; object-fit: cover;">
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Vendor details after the picture -->
+                                    <div class="vendor-info mb-2">
+                                        <div class="info-line">
+                                            <strong>Type:</strong>
+                                            <span class="text-capitalize">{{ vendor.vendor_type }}</span>
+                                            {% if vendor.accept_tour_partnership %}
+                                            <span class="badge bg-success ms-2">
+                                                <i class="fas fa-handshake me-1"></i>Open to Partnerships
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        {% if vendor.has_cuisine_types %}
+                                        <div class="info-line">
+                                            <strong>Cuisine:</strong> {{ vendor.get_cuisine_types_display }}
+                                        </div>
+                                        {% endif %}
+                                        {% if vendor.address %}
+                                        <div class="info-line">
+                                            <strong>Address:</strong> {{ vendor.address }}
+                                        </div>
+                                        {% endif %}
+                                        {% if vendor.opening_hours %}
+                                        <div class="info-line">
+                                            <strong>Hours:</strong> {{ vendor.opening_hours }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if vendor.description %}
+                            <p class="card-text text-muted mb-2">{{ vendor.description|truncatewords:30 }}</p>
+                            {% endif %}
+
+                            <!-- Features Badges -->
+                            <div class="mb-2">
+                                {% if vendor.halal %}
+                                <span class="badge bg-success">Halal Certified</span>
+                                {% endif %}
+                                {% if vendor.vegetarian %}
+                                <span class="badge bg-light text-dark">Vegetarian</span>
+                                {% endif %}
+                                {% if vendor.catering_service %}
+                                <span class="badge bg-info">Catering Available</span>
+                                {% endif %}
+                                {% if vendor.is_featured %}
+                                <span class="badge bg-warning">Featured</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Contact Info -->
+                            <div class="contact-info mt-3 d-flex align-items-center flex-wrap gap-3">
+                                {% if vendor.phone %}
+                                <small class="text-muted">
+                                    <i class="fas fa-phone me-1"></i>{{ vendor.phone }}
+                                </small>
+                                {% endif %}
+                                {% if vendor.email %}
+                                <small class="text-muted">
+                                    <i class="fas fa-envelope me-1"></i>{{ vendor.email }}
+                                </small>
+                                {% endif %}
+                                {% if vendor.website %}
+                                <small class="text-muted">
+                                    <i class="fas fa-globe me-1"></i>
+                                    <a href="{{ vendor.website }}" target="_blank" class="text-muted">Website</a>
+                                </small>
+                                {% endif %}
+                            </div>
+
+                            <!-- NEW – single “Send Proposal” button - COMING SOON (non-functioning) -->
+                            <div class="d-flex gap-2 mt-3">
+                                <button class="btn btn-outline-secondary btn-sm" disabled style="cursor: not-allowed;">
+                                    <i class="fas fa-handshake me-1"></i>Send Proposal
+                                    <small class="text-muted ms-1">(Coming Soon)</small>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="alert alert-info">
+                No vendors found matching your filters.
+                {% if selected_vendor_types or selected_cuisine_types or partnership_only or halal_filter or vegetarian_filter or catering_filter %}
+                <a href="{% url 'tours:vendor_list' %}" class="alert-link">Clear filters</a> to see all vendors.
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Contact Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Contact Vendor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Contact this vendor directly to discuss partnership opportunities.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Vendor Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Vendor details will be shown here.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function applyFilters() {
+        const selectedVendorTypes = Array.from(document.querySelectorAll('input[name="vendor_type"]:checked')).map(cb => cb.value);
+        const selectedCuisineTypes = Array.from(document.querySelectorAll('input[name="cuisine_type"]:checked')).map(cb => cb.value);
+        const partnershipOnly = document.querySelector('input[name="partnership_only"]:checked') ? '1' : '';
+        const halalOnly = document.querySelector('input[name="halal"]:checked') ? 'on' : '';
+        const vegetarianOnly = document.querySelector('input[name="vegetarian"]:checked') ? 'on' : '';
+        const cateringOnly = document.querySelector('input[name="catering"]:checked') ? 'on' : '';
+        const searchQuery = document.querySelector('input[name="q"]').value;
+
+        const params = new URLSearchParams();
+        selectedVendorTypes.forEach(type => params.append('vendor_type', type));
+        selectedCuisineTypes.forEach(cuisine => params.append('cuisine_type', cuisine));
+        if (partnershipOnly) params.append('partnership_only', partnershipOnly);
+        if (halalOnly) params.append('halal', halalOnly);
+        if (vegetarianOnly) params.append('vegetarian', vegetarianOnly);
+        if (cateringOnly) params.append('catering', cateringOnly);
+        if (searchQuery) params.append('q', searchQuery);
+
+        window.location.href = '{% url "tours:vendor_list" %}?' + params.toString();
+    }
+
+    function clearFilters() {
+        window.location.href = '{% url "tours:vendor_list" %}';
+    }
+
+    function showContactModal(vendorId) {
+        const modal = new bootstrap.Modal(document.getElementById('contactModal'));
+        modal.show();
+    }
+
+    function showDetailsModal(vendorId) {
+        const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+        modal.show();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+        filterCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                setTimeout(applyFilters, 100);
+            });
+        });
+
+        const searchForm = document.querySelector('form[method="get"]');
+        searchForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            applyFilters();
+        });
+    });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-section-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .filter-option {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        padding: 0.25rem 0;
+    }
+
+    .filter-option input[type="checkbox"] {
+        margin-right: 0.75rem;
+        width: 16px;
+        height: 16px;
+    }
+
+    .filter-option label {
+        margin-bottom: 0;
+        font-size: 0.9rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+    }
+
+    .vendor-info {
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .info-line {
+        margin-bottom: 0.3rem;
+        line-height: 1.4;
+    }
+
+    .info-line strong {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .business-image-container {
+        flex-shrink: 0;
+    }
+
+    .business-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .contact-info {
+        border-top: 1px solid #e9ecef;
+        padding-top: 0.5rem;
+    }
+</style>
+{% endblock %}

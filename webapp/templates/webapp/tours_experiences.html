@@ -1,0 +1,206 @@
+<!-- webapp/templates/webapp/tours_experiences.html -->
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center" id="heroSection">
+    <div class="container">
+        <h1 class="display-4 mb-4">Tours & Experiences</h1>
+        <p class="lead mb-4">Guided culinary adventures that reveal Singapore's hidden food gems</p>
+    </div>
+</section>
+
+<div class="container mt-4">
+    <h1>Taste Singapore Like a Local</h1>
+    <p class="lead">Go beyond the menu and discover Singapore's culinary soul - secret spots, passionate makers, and flavors that will make
+    you swoon.</p>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body text-center d-flex flex-column">
+                    <div class="mb-3">
+                        <h3>🚶</h3>
+                        <h5>Guided Food Tours</h5>
+                    </div>
+                    <div class="flex-grow-1">
+                        <p>Join knowledgeable local guides on immersive food journeys through Singapore's diverse
+                            neighborhoods. These expertly curated tours take you beyond the guidebooks to discover
+                            authentic local favorites, hear stories behind the dishes, and learn about Singapore's rich
+                            culinary heritage from those who know it best.</p>
+                        <p>Perfect for visitors and locals alike who want to deepen their understanding of Singapore's
+                            food culture while tasting a variety of signature dishes in their most authentic settings.
+                        </p>
+                    </div>
+                    <a href="{% url 'webapp:guided_tours' %}" class="btn btn-outline-danger mt-3">Explore Tours</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body text-center d-flex flex-column">
+                    <div class="mb-3">
+                        <h3>🗺️</h3>
+                        <h5>Foodie Crawls</h5>
+                    </div>
+                    <div class="flex-grow-1">
+                        <p>Take control of your culinary adventure with our carefully designed self-guided itineraries.
+                            These detailed food trails come with maps, recommendations, insider tips, and suggested
+                            timings, allowing you to explore at your own pace while still enjoying a curated food
+                            experience.</p>
+                        <p>Ideal for independent explorers, repeat visitors, and locals looking to discover new
+                            neighborhoods. Each crawl is themed around specific dishes, cultural influences, or
+                            geographic areas, giving you the freedom to create your own perfect food day in Singapore.
+                        </p>
+                    </div>
+                    <a href="{% url 'webapp:foodie_crawls' %}" class="btn btn-outline-danger mt-3">Explore Crawls</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section Styles - REDUCED HEIGHT BY ONE THIRD */
+    .hero-section {
+        position: relative;
+        color: white;
+        padding: 100px 0;
+        text-align: center;
+        overflow: hidden;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        /* ADD FALLBACK BACKGROUND */
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+        url('{% static "images/banner/loc-bg-1.png" %}') center/cover;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3));
+        z-index: 1;
+    }
+
+    .hero-section .container {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        transition: opacity 1.5s ease-in-out;
+        opacity: 0;
+    }
+
+    .hero-bg.active {
+        opacity: 1;
+    }
+
+    /* Fallback background if JavaScript fails */
+    .no-js .hero-section {
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+        url('{% static "images/banner/loc-bg-1.png" %}') center/cover;
+    }
+
+    /* Card improvements */
+    .card {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: none;
+        height: 100%;
+    }
+
+    .card:hover {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transform: none;
+        border-color: #e9ecef;
+    }
+
+    /* Ensure consistent card heights */
+    .card-body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .flex-grow-1 {
+        flex-grow: 1;
+    }
+
+    /* Icon styling */
+    .card h3 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // ===== SIMPLE HERO BANNER ROTATION =====
+        const heroSection = document.getElementById('heroSection');
+
+        // Define your 5 food images - USING CORRECT PATHS
+        const imageUrls = [
+            "{% static 'images/banner/loc_bg_1.png' %}",
+            "{% static 'images/banner/loc_bg_2.png' %}",
+            "{% static 'images/banner/loc_bg_3.png' %}",
+            "{% static 'images/banner/loc_bg_4.png' %}",
+            "{% static 'images/banner/loc_bg_5.png' %}"
+        ];
+
+        console.log("Banner images to load:", imageUrls); // DEBUG
+
+        // Remove no-js class if JavaScript is running
+        document.documentElement.classList.remove('no-js');
+
+        // Preload images to ensure they're available
+        function preloadImages(urls) {
+            urls.forEach(url => {
+                const img = new Image();
+                img.src = url;
+            });
+        }
+
+        // Preload all images
+        preloadImages(imageUrls);
+
+        // Create all background elements
+        const backgrounds = imageUrls.map((url, index) => {
+            const bgDiv = document.createElement('div');
+            bgDiv.className = `hero-bg ${index === 0 ? 'active' : ''}`;
+            bgDiv.style.backgroundImage = `url(${url})`;
+            heroSection.appendChild(bgDiv);
+            return bgDiv;
+        });
+
+        console.log("Created", backgrounds.length, "background elements"); // DEBUG
+
+        // Simple rotation every 5 seconds (reduced for testing)
+        let currentIndex = 0;
+        setInterval(() => {
+            backgrounds[currentIndex].classList.remove('active');
+            currentIndex = (currentIndex + 1) % backgrounds.length;
+            backgrounds[currentIndex].classList.add('active');
+            console.log("Switched to background:", currentIndex); // DEBUG
+        }, 5000); // Reduced to 5 seconds for testing
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,56 @@
+<!-- users/templates/users/my_reviews.html -->
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block title %}My Reviews - HawkerMate{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">My Reviews</h1>
+
+            <!-- Reviews List -->
+            <div class="row">
+                {% if reviews %}
+                {% for review in reviews %}
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a
+                                    href="{% if review.vendor.vendor_type == 'restaurant' %}{% url 'webapp:restaurant_detail' review.vendor.id %}{% else %}{% url 'webapp:food_stall_detail' review.vendor.id %}{% endif %}">
+                                    {{ review.vendor.business_name }}
+                                </a>
+                            </h5>
+
+                            <!-- Star Rating -->
+                            <div class="mb-2">
+                                {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %} <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                    <i class="fas fa-star text-secondary"></i>
+                                    {% endif %}
+                                    {% endfor %}
+                                    <span class="ms-2">{{ review.rating }}/5</span>
+                            </div>
+
+                            <small class="text-muted">
+                                Reviewed on {{ review.created_at|date:"d/m/Y" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <h4>No Reviews Yet</h4>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

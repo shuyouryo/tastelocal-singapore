@@ -1,0 +1,30 @@
+<!-- proposal/templates/proposal/create.html -->
+{% extends 'proposal/base_generic.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>New Proposal</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.receiver }} <!-- hidden -->
+    
+        <!-- Your commitments -->
+        <div class="mb-3">
+            <label class="form-label">Your commitments</label>
+            {{ form.sender_duties }}
+        </div>
+    
+        <!-- Their commitments -->
+        <div class="mb-3">
+            <label class="form-label">
+                Their commitments
+                <small class="text-muted d-block">(You may leave blank – the other party will fill this when they
+                    respond)</small>
+            </label>
+            {{ form.receiver_duties }}
+        </div>
+    
+        <button type="submit" class="btn btn-primary">Send Proposal</button>
+        <a href="javascript:history.back()" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>
+{% endblock %}

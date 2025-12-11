@@ -1,0 +1,54 @@
+<!-- proposal/templates/proposal/respond.html -->
+{% extends 'proposal/base_generic.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Respond to Proposal #{{ proposal.id }}</h2>
+    <p><strong>From:</strong> {{ proposal.sender.user.first_name }} {{ proposal.sender.user.last_name }}, {{ proposal.sender.business_name|default:proposal.sender.company_name }}</p>
+    <p><strong>Status:</strong> {{ proposal.get_status_display }}</p>
+
+    <form method="post">
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+        {% for field in form %}
+        {% if field.errors %}
+            <div class="alert alert-danger">{{ field.errors }}</div>
+        {% endif %}
+        {% endfor %}
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.action }}
+        </div>
+
+        <!-- only shown if user picks "counter" -->
+        <div id="counter-fields" class="d-none">
+            <h5>Your new commitments</h5>
+            {{ form.sender_duties }}
+            <h5 class="mt-3">Their new commitments</h5>
+            {{ form.receiver_duties }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit Response</button>
+        <a href="{% url 'proposal:detail' proposal.id %}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const radios = document.querySelectorAll('input[name="action"]');
+        const box = document.getElementById('counter-fields');
+        const duties = box.querySelectorAll('textarea');
+        radios.forEach(r => r.addEventListener('change', () => {
+            const isCounter = r.value === 'counter';
+            box.classList.toggle('d-none', !isCounter);
+            duties.forEach(t => t.disabled = !isCounter);   // ← disable when hidden
+        }));
+        // initialise
+        const startCounter = document.querySelector('input[value="counter"]:checked');
+        box.classList.toggle('d-none', !startCounter);
+        duties.forEach(t => t.disabled = !startCounter);
+    });
+</script>
+{% endblock %}

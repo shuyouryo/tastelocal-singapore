@@ -1,0 +1,91 @@
+<!-- webapp/templates/webapp/contact.html -->
+{% extends 'webapp/base.html' %}
+
+{% block title %}Contact Us - TasteLocal Singapore{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4">Contact Us</h1>
+
+            <div class="row mb-5">
+                <div class="col-md-4 text-center mb-4">
+                    <div class="p-3 border rounded">
+                        <i class="fas fa-envelope fa-2x text-primary mb-3"></i>
+                        <h6>General Inquiries</h6>
+                        <p class="small mb-0">hello@tastelocal.sg</p>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center mb-4">
+                    <div class="p-3 border rounded">
+                        <i class="fas fa-building fa-2x text-primary mb-3"></i>
+                        <h6>Business Partnerships</h6>
+                        <p class="small mb-0">partners@tastelocal.sg</p>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center mb-4">
+                    <div class="p-3 border rounded">
+                        <i class="fas fa-headset fa-2x text-primary mb-3"></i>
+                        <h6>Customer Support</h6>
+                        <p class="small mb-0">support@tastelocal.sg</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="mb-4">Our Office</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-start mb-3">
+                                <i class="fas fa-map-marker-alt text-primary me-3 mt-1"></i>
+                                <div>
+                                    <h6 class="mb-1">Address</h6>
+                                    <p class="small mb-0">
+                                        123 Food Street<br>
+                                        #04-56 Hawker Centre<br>
+                                        Singapore 123456
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-start mb-3">
+                                <i class="fas fa-phone text-primary me-3 mt-1"></i>
+                                <div>
+                                    <h6 class="mb-1">Phone</h6>
+                                    <p class="small mb-0">+65 6123 4567</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-start mb-3">
+                                <i class="fas fa-fax text-primary me-3 mt-1"></i>
+                                <div>
+                                    <h6 class="mb-1">Fax</h6>
+                                    <p class="small mb-0">+65 6123 4568</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-start mb-3">
+                                <i class="fas fa-clock text-primary me-3 mt-1"></i>
+                                <div>
+                                    <h6 class="mb-1">Business Hours</h6>
+                                    <p class="small mb-0">
+                                        Mon - Fri: 9:00 AM - 6:00 PM<br>
+                                        Sat: 9:00 AM - 1:00 PM<br>
+                                        Sun: Closed
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

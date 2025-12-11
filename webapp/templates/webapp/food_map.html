@@ -1,0 +1,26 @@
+<!-- webapp/templates/webapp/food_map.html -->
+{% extends 'webapp/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'webapp:homepage' %}">Home</a></li>
+            <li class="breadcrumb-item active">Food Map</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-12">
+            <h1>Singapore Food Map</h1>
+            <p class="lead">Explore food locations across Singapore</p>
+
+            <div class="alert alert-info">
+                <h5>🚧 Map Under Construction</h5>
+                <p>We're working on bringing you an interactive food map. Check back soon!</p>
+                <a href="{% url 'webapp:homepage' %}" class="btn btn-outline-primary">← Back to Homepage</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
